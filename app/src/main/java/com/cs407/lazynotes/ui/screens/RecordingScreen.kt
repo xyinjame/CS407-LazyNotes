@@ -1,8 +1,6 @@
-// RecordingScreen.kt
-package com.example.recording
+package com.cs407.lazynotes.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -10,39 +8,37 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+
+private enum class RecordState { Idle, Recording, Paused }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecordingScreen(
     modifier: Modifier = Modifier,
     onClose: () -> Unit = {},
-    onPauseClick: () -> Unit = {},
     onDoneClick: () -> Unit = {}
 ) {
-    var isRecording by rememberSaveable { mutableStateOf(false) }
+    var state by rememberSaveable { mutableStateOf(RecordState.Idle) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("New Recording") },
-                actions = {
-                    TextButton(onClick = onClose) {
-                        Text("Close")
-                    }
-                },
+                actions = { TextButton(onClick = onClose) { Text("Close") } },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
         bottomBar = {
-            if (isRecording) {
-                BottomBarTextOnly(
-                    onPause = onPauseClick,
+            if (state != RecordState.Idle) {
+                BottomBar(
+                    isPaused = state == RecordState.Paused,
+                    onPauseResume = {
+                        state = if (state == RecordState.Recording) RecordState.Paused else RecordState.Recording
+                    },
                     onDone = onDoneClick
                 )
             }
@@ -62,17 +58,21 @@ fun RecordingScreen(
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = if (isRecording) "Recording…" else "Ready to record",
+                    text = when (state) {
+                        RecordState.Idle -> "Ready to record"
+                        RecordState.Recording -> "Recording…"
+                        RecordState.Paused -> "Paused"
+                    },
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(Modifier.weight(1f))
 
-                // Center circular button: tap once to go Idle -> Recording
-                CenterButtonTextOnly(
-                    isRecording = isRecording,
-                    onClick = { if (!isRecording) isRecording = true }
-                )
+                if (state == RecordState.Idle) {
+                    CenterCircleButton(label = "START") { state = RecordState.Recording }
+                } else {
+                    Spacer(Modifier.height(96.dp))
+                }
 
                 Spacer(Modifier.weight(1f))
             }
@@ -81,29 +81,27 @@ fun RecordingScreen(
 }
 
 @Composable
-private fun CenterButtonTextOnly(
-    isRecording: Boolean,
+private fun CenterCircleButton(
+    label: String,
     onClick: () -> Unit
 ) {
     OutlinedButton(
         onClick = onClick,
         shape = CircleShape,
         modifier = Modifier.size(96.dp),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            width = 2.dp,
-        ),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onSurface
-        )
+        ),
     ) {
-        Text(if (isRecording) "PAUSE" else "START")
+        Text(label)
     }
 }
 
 @Composable
-private fun BottomBarTextOnly(
-    onPause: () -> Unit,
+private fun BottomBar(
+    isPaused: Boolean,
+    onPauseResume: () -> Unit,
     onDone: () -> Unit
 ) {
     Row(
@@ -114,12 +112,12 @@ private fun BottomBarTextOnly(
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextButton(
-            onClick = onPause,
+            onClick = onPauseResume,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
         ) {
-            Text("PAUSE", color = MaterialTheme.colorScheme.onError)
+            Text(if (isPaused) "RESUME" else "PAUSE", color = MaterialTheme.colorScheme.onError)
         }
         Box(
             Modifier
@@ -138,9 +136,3 @@ private fun BottomBarTextOnly(
     }
 }
 
-/* ---------- Preview ---------- */
-@Preview(showBackground = true, widthDp = 360, heightDp = 740)
-@Composable
-private fun PreviewRecordingScreen() {
-    MaterialTheme { RecordingScreen() }
-}
