@@ -39,17 +39,20 @@ fun notesScreen(
 
 ) {
 
+    // Variables used to change the text of each button and transcript
     var sliderPosition by remember {mutableStateOf(0f)}
     var recordingButtonText by remember {mutableStateOf(R.string.play_recording)}
     var transcriptLayout by remember {mutableStateOf(R.string.transcript)}
     var transcript by remember {mutableStateOf("Bullet Points")}
 
+    // Check what the transcript layout the user wants and change transcript accordingly
     if (transcriptLayout == R.string.transcript) {
         transcript = "Bullet Points"
     } else {
         transcript = "Transcript"
     }
 
+    // Main container that houses all elements
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -58,6 +61,7 @@ fun notesScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        // Top row that contains the note name and button to close the current note
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -71,6 +75,7 @@ fun notesScreen(
                     .fillMaxWidth()
             ) {
 
+                // Current Note Name
                 Text(
                     text = "Placeholder Note Name",
                     fontSize = 20.sp,
@@ -79,6 +84,7 @@ fun notesScreen(
                         .align(Alignment.Center)
                 )
 
+                // Button to exit note
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -95,6 +101,7 @@ fun notesScreen(
             }
         }
 
+        // Play/pause recording button
         OutlinedButton(
             onClick = {
                 if (recordingButtonText == R.string.play_recording) {
@@ -117,6 +124,7 @@ fun notesScreen(
             )
         }
 
+        // Transcript/bullet point button
         OutlinedButton(
             onClick = {
                 if (transcriptLayout == R.string.transcript) {
@@ -139,6 +147,7 @@ fun notesScreen(
             )
         }
 
+        // Audio file slider
         Slider(
             value = sliderPosition,
             onValueChange = { newValue ->
@@ -155,6 +164,7 @@ fun notesScreen(
                 .height(30.dp)
         )
 
+        // Transcript of the audio file
         Text(
             text = transcript,
             modifier = Modifier

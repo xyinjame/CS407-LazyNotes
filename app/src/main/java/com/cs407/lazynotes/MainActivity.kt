@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.cs407.lazynotes.ui.screens.notesScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,11 +20,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             LazyNotesTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    //Greeting(
-                       // name = "Android",
-//modifier = Modifier.padding(innerPadding)
-                    //)
-                    notesScreen()
+                    Greeting(
+                       name = "Android",
+                       modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }
