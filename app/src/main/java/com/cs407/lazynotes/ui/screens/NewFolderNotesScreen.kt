@@ -15,14 +15,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,20 +29,7 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun notesScreen() {
-
-    // Variables used to change the text of each button and transcript
-    var sliderPosition by remember {mutableStateOf(0f)}
-    var recordingButtonText by remember {mutableStateOf(R.string.play_recording)}
-    var transcriptLayout by remember {mutableStateOf(R.string.transcript)}
-    var transcript by remember {mutableStateOf("Bullet Points")}
-
-    // Check what the transcript layout the user wants and change transcript accordingly
-    if (transcriptLayout == R.string.transcript) {
-        transcript = "Bullet Points"
-    } else {
-        transcript = "Transcript"
-    }
+fun newFolderNotesScreen() {
 
     // Main container that houses all elements
     Column(
@@ -59,7 +40,7 @@ fun notesScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Top row that contains the note name and button to close the current note
+        // Top row that contains the title and button to close the current note
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -73,16 +54,17 @@ fun notesScreen() {
                     .fillMaxWidth()
             ) {
 
-                // Current Note Name
+                // create title
                 Text(
-                    text = "Placeholder Note Name",
+                    text = stringResource(id = R.string.create),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
-                        .align(Alignment.Center)
+                        .align(Alignment.CenterStart)
+                        .padding(start = 15.dp)
                 )
 
-                // Button to exit note
+                // Button to exit menu
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -99,38 +81,9 @@ fun notesScreen() {
             }
         }
 
-        // Play/pause recording button
+        // New notes button
         OutlinedButton(
-            onClick = {
-                if (recordingButtonText == R.string.play_recording) {
-                    recordingButtonText = R.string.pause_recording
-                } else {
-                    recordingButtonText = R.string.play_recording
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                   containerColor = Color.DarkGray,
-            ),
-            shape = RectangleShape,
-            border = BorderStroke(2.dp, Color.Gray),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-        ) {
-            Text(
-                text = stringResource(id = recordingButtonText)
-            )
-        }
-
-        // Transcript/bullet point button
-        OutlinedButton(
-            onClick = {
-                if (transcriptLayout == R.string.transcript) {
-                    transcriptLayout = R.string.bullet_points
-                } else {
-                    transcriptLayout = R.string.transcript
-                }
-            },
+            onClick = {},
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray,
             ),
@@ -141,34 +94,25 @@ fun notesScreen() {
                 .height(60.dp)
         ) {
             Text(
-                text = stringResource(id = transcriptLayout)
+                text = stringResource(id = R.string.new_notes)
             )
         }
 
-        // Audio file slider
-        Slider(
-            value = sliderPosition,
-            onValueChange = { newValue ->
-                sliderPosition = newValue
-            },
-            valueRange = 0f..1f,
-            colors = SliderDefaults.colors(
-                thumbColor = androidx.compose.ui.graphics.Color.White,
-                activeTrackColor = androidx.compose.ui.graphics.Color.DarkGray,
-                inactiveTrackColor = androidx.compose.ui.graphics.Color.Gray
+        // New folder button
+        OutlinedButton(
+            onClick = {},
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.DarkGray,
             ),
+            shape = RectangleShape,
+            border = BorderStroke(2.dp, Color.Gray),
             modifier = Modifier
-                .padding(horizontal = 15.dp, vertical = 20.dp)
-                .height(30.dp)
-        )
-
-        // Transcript of the audio file
-        Text(
-            text = transcript,
-            modifier = Modifier
-                .padding(10.dp, 0.dp, 10.dp, 10.dp)
-        )
-
+                .fillMaxWidth()
+                .height(60.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.new_folder)
+            )
+        }
     }
 }
-
