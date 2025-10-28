@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">LazyNotes</string>
+    <string name="play_recording">Play Recording</string>
+    <string name="pause_recording">Pause Recording</string>
+    <string name="transcript">Transcript</string>
+    <string name="bullet_points">Bullet Points</string>
 </resources>
