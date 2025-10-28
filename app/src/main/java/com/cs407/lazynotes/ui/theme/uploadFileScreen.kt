@@ -35,7 +35,6 @@ fun uploadFileScreen() {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // 标题栏
         Row(
             modifier = Modifier
                 .fillMaxWidth()

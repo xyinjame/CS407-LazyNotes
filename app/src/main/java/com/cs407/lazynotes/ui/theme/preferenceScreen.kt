@@ -37,7 +37,6 @@ fun preferenceScreen() {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // 标题栏（Home图标居右）
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -45,19 +44,19 @@ fun preferenceScreen() {
                 .padding(10.dp, 25.dp, 10.dp, 15.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) { // 用Box控制左右布局
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Preference",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
-                        .align(Alignment.CenterStart) // 标题居左
+                        .align(Alignment.CenterStart)
                         .padding(start = 15.dp)
                 )
                 Button(
                     onClick = {},
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    modifier = Modifier.align(Alignment.CenterEnd) // 图标居右
+                    modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Home,
@@ -75,7 +74,6 @@ fun preferenceScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 第一栏：Default Text Layout
         Column(modifier = Modifier.fillMaxWidth().padding(15.dp)) {
             Text(text = "Default Text Layout", fontSize = 16.sp, color = Color.Black)
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
@@ -110,7 +108,6 @@ fun preferenceScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 第二栏：Default Folder State
         Column(modifier = Modifier.fillMaxWidth().padding(15.dp)) {
             Text(text = "Default Folder State", fontSize = 16.sp, color = Color.Black)
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
@@ -145,7 +142,6 @@ fun preferenceScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 第三栏：Default Folder Layout
         Column(modifier = Modifier.fillMaxWidth().padding(15.dp)) {
             Text(text = "Default Folder Layout", fontSize = 16.sp, color = Color.Black)
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
