@@ -29,7 +29,7 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun newFolderNotesScreen() {
+fun NewFolderNotesScreen() {
 
     // Main container that houses all elements
     Column(

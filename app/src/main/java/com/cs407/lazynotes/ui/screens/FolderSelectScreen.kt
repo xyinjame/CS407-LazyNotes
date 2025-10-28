@@ -34,7 +34,7 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun folderSelectScreen() {
+fun FolderSelectScreen() {
 
     val folderNames = remember{ mutableStateListOf<String>() }
 

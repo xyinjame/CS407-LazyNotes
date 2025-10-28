@@ -35,7 +35,7 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun notesScreen() {
+fun NotesScreen() {
 
     // Variables used to change the text of each button and transcript
     var sliderPosition by remember {mutableStateOf(0f)}
@@ -153,9 +153,9 @@ fun notesScreen() {
             },
             valueRange = 0f..1f,
             colors = SliderDefaults.colors(
-                thumbColor = androidx.compose.ui.graphics.Color.White,
-                activeTrackColor = androidx.compose.ui.graphics.Color.DarkGray,
-                inactiveTrackColor = androidx.compose.ui.graphics.Color.Gray
+                thumbColor = Color.White,
+                activeTrackColor = Color.DarkGray,
+                inactiveTrackColor = Color.Gray
             ),
             modifier = Modifier
                 .padding(horizontal = 15.dp, vertical = 20.dp)

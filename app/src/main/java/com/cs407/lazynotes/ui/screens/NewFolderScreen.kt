@@ -34,7 +34,7 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun newFolderScreen() {
+fun NewFolderScreen() {
 
     // Text variable to remember and display input by user
     var text by remember {mutableStateOf("")}
