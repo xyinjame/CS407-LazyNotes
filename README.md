@@ -40,6 +40,6 @@ LazyNotes allows users to record lectures through their mobile device, automatic
 - OpenAI GPT for summarization
 
 ## Milestones & Roles
-Milestone 1
-Project Coordinator:
-Observer:
+Milestone 1  
+Project Coordinator:  
+Observer:  
