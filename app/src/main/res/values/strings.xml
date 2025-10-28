@@ -7,4 +7,6 @@
     <string name="create">Create</string>
     <string name="new_folder">New Folder</string>
     <string name="new_notes">New Notes</string>
+    <string name="record">Record Audio</string>
+    <string name="upload">Upload Audio</string>
 </resources>

@@ -29,7 +29,7 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun newFolderNotesScreen() {
+fun newNotesScreen() {
 
     // Main container that houses all elements
     Column(
@@ -40,7 +40,7 @@ fun newFolderNotesScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Top row that contains the title and button to close
+        // Top row that contains the title and button to close the menu
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,7 +56,7 @@ fun newFolderNotesScreen() {
 
                 // create title
                 Text(
-                    text = stringResource(id = R.string.create),
+                    text = stringResource(id = R.string.new_notes),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -81,7 +81,7 @@ fun newFolderNotesScreen() {
             }
         }
 
-        // New notes button
+        // Record audio button
         OutlinedButton(
             onClick = {},
             colors = ButtonDefaults.buttonColors(
@@ -94,11 +94,11 @@ fun newFolderNotesScreen() {
                 .height(60.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.new_notes)
+                text = stringResource(id = R.string.record)
             )
         }
 
-        // New folder button
+        // Upload audio button
         OutlinedButton(
             onClick = {},
             colors = ButtonDefaults.buttonColors(
@@ -111,7 +111,7 @@ fun newFolderNotesScreen() {
                 .height(60.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.new_folder)
+                text = stringResource(id = R.string.upload)
             )
         }
     }

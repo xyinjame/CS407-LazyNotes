@@ -15,8 +15,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,7 +34,9 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun newFolderNotesScreen() {
+fun newFolderScreen() {
+
+    var text by remember {mutableStateOf("")}
 
     // Main container that houses all elements
     Column(
@@ -40,7 +47,7 @@ fun newFolderNotesScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Top row that contains the title and button to close
+        // Top row that contains the title and button to close the current menu
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,7 +63,7 @@ fun newFolderNotesScreen() {
 
                 // create title
                 Text(
-                    text = stringResource(id = R.string.create),
+                    text = stringResource(id = R.string.new_folder),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -81,24 +88,20 @@ fun newFolderNotesScreen() {
             }
         }
 
-        // New notes button
-        OutlinedButton(
-            onClick = {},
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.DarkGray,
-            ),
-            shape = RectangleShape,
-            border = BorderStroke(2.dp, Color.Gray),
+        // Text box for the user to enter folder name
+        OutlinedTextField(
+            value = text,
+            onValueChange = { newText ->
+                text = newText
+            },
+            placeholder = { Text("New Folder Name") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.new_notes)
-            )
-        }
+                .background(Color.Gray),
+        )
 
-        // New folder button
+        // Create button to create folder with specified name
         OutlinedButton(
             onClick = {},
             colors = ButtonDefaults.buttonColors(
@@ -111,8 +114,11 @@ fun newFolderNotesScreen() {
                 .height(60.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.new_folder)
+                text = stringResource(id = R.string.create)
             )
         }
     }
 }
+
+
+
