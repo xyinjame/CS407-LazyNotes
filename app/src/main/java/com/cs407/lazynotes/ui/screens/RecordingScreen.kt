@@ -24,8 +24,10 @@ fun RecordingScreen(
 
     Scaffold(
         topBar = {
+            // Top bar with title "New Recording" and a Close text button on the right
             TopAppBar(
                 title = { Text("New Recording") },
+                // Close button in the app bar
                 actions = { TextButton(onClick = onClose) { Text("Close") } },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
@@ -33,10 +35,12 @@ fun RecordingScreen(
             )
         },
         bottomBar = {
+            // Bottom red bar is shown after recording starts
             if (state != RecordState.Idle) {
                 BottomBar(
                     isPaused = state == RecordState.Paused,
                     onPauseResume = {
+                        // Toggle between Recording and Paused when user taps PAUSE / RESUME
                         state = if (state == RecordState.Recording) RecordState.Paused else RecordState.Recording
                     },
                     onDone = onDoneClick
@@ -44,6 +48,7 @@ fun RecordingScreen(
             }
         }
     ) { inner ->
+        // Main screen area under the app bar and above the bottom bar
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -57,6 +62,7 @@ fun RecordingScreen(
             ) {
                 Spacer(Modifier.height(16.dp))
 
+                // Status text near the top: "Ready to record", "Recording…", or "Paused"
                 Text(
                     text = when (state) {
                         RecordState.Idle -> "Ready to record"
@@ -68,9 +74,13 @@ fun RecordingScreen(
 
                 Spacer(Modifier.weight(1f))
 
+                // Center circle button:
+                // - Visible only in Idle state, labeled "START"
+                // - Clicking it moves the screen into Recording state
                 if (state == RecordState.Idle) {
                     CenterCircleButton(label = "START") { state = RecordState.Recording }
                 } else {
+                    // When Recording or Paused, hide the center button
                     Spacer(Modifier.height(96.dp))
                 }
 
