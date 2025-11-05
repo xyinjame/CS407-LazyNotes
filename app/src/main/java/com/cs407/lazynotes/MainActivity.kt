@@ -21,8 +21,8 @@ class MainActivity : ComponentActivity() {
             LazyNotesTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                       name = "Android",
+                       modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
