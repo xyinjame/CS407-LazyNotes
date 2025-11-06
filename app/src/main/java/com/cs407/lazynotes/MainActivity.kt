@@ -17,6 +17,7 @@ import com.cs407.lazynotes.ui.screens.NoteScreen
 import com.cs407.lazynotes.ui.screens.RecordingScreen
 import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
+import com.cs407.lazynotes.ui.screens.uploadFileBrowse
 import com.cs407.lazynotes.ui.screens.uploadFileScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 
@@ -50,7 +51,7 @@ fun AppNavigation() {
 
         composable("settings") {
             SettingsScreen(
-                navController = navController,
+                onNavigateToHome = {navController.navigate("home")},
                 onNavigateToPreferences = {navController.navigate("preferences")}
             )
         }
@@ -68,7 +69,7 @@ fun AppNavigation() {
         }
 
         composable("newFolder") {
-            NewFolderScreen()
+            NewFolderScreen(onNavigateToHome = {navController.navigate("home")})
         }
 
         composable("newNote") {
@@ -80,7 +81,7 @@ fun AppNavigation() {
         }
 
         composable("preferences") {
-            preferenceScreen(navController = navController)
+            preferenceScreen(onNavigateToHome = {navController.navigate("home")})
         }
 
         composable("record") {
@@ -91,7 +92,10 @@ fun AppNavigation() {
         }
 
         composable("upload") {
-            uploadFileScreen(navController = navController)
+            uploadFileScreen(
+                onNavigateToHome = {navController.navigate("home")},
+                onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}
+            )
         }
 
         composable("folderSelect") {
@@ -99,6 +103,10 @@ fun AppNavigation() {
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToNewFolder = {navController.navigate("newFolder")}
             )
+        }
+
+        composable("uploadFileBrowse") {
+            uploadFileBrowse(onNavigateToHome = {navController.navigate("home")})
         }
 
     }

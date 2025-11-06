@@ -29,11 +29,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 
 @Composable
 fun preferenceScreen(
-    navController: NavController
+    onNavigateToHome: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -57,7 +56,7 @@ fun preferenceScreen(
                         .padding(start = 15.dp)
                 )
                 Button(
-                    onClick = { navController.popBackStack() },
+                    onClick = { onNavigateToHome() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
