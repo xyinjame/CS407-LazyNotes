@@ -36,7 +36,11 @@ data class Folder(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onNavigateToViewNotes: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToNew: () -> Unit
+) {
     // Sample data - this will be replaced with real data later
     val folders = remember {
         listOf(
@@ -72,7 +76,7 @@ fun HomeScreen() {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Navigate to settings */ }) {
+                    IconButton(onClick = { onNavigateToSettings() }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings"
@@ -86,7 +90,7 @@ fun HomeScreen() {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Add new note */ },
+                onClick = { onNavigateToNew() },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
@@ -127,7 +131,8 @@ fun HomeScreen() {
                             } else {
                                 expandedFolders + folder.id
                             }
-                        }
+                        },
+                        onNoteClick = { onNavigateToViewNotes() }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -172,7 +177,8 @@ fun SearchBar(
 fun FolderItem(
     folder: Folder,
     isExpanded: Boolean,
-    onToggleExpand: () -> Unit
+    onToggleExpand: () -> Unit,
+    onNoteClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -213,7 +219,10 @@ fun FolderItem(
                     .padding(top = 4.dp)
             ) {
                 folder.notes.forEach { note ->
-                    NoteItem(note = note)
+                    NoteItem(
+                        note = note,
+                        onClick = {onNoteClick()}
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }
@@ -221,12 +230,16 @@ fun FolderItem(
     }
 }
 
+
 @Composable
-fun NoteItem(note: Note) {
+fun NoteItem(
+    note: Note,
+    onClick: () -> Unit
+    ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* TODO: Navigate to note detail */ },
+            .clickable { onClick() },
         color = Color(0xFFB0B0B0),
         shape = RoundedCornerShape(4.dp)
     ) {
