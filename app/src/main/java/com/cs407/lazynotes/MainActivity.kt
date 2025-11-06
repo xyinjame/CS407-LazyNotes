@@ -4,13 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,6 +14,7 @@ import com.cs407.lazynotes.ui.screens.NewFolderScreen
 import com.cs407.lazynotes.ui.screens.NewNoteScreen
 import com.cs407.lazynotes.ui.screens.NoteScreen
 import com.cs407.lazynotes.ui.screens.SettingsScreen
+import com.cs407.lazynotes.ui.screens.preferenceScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 
 class MainActivity : ComponentActivity() {
@@ -52,7 +47,8 @@ fun AppNavigation() {
 
         composable("settings") {
             SettingsScreen(
-                navController = navController
+                navController = navController,
+                onNavigateToPreferences = {navController.navigate("preferences")}
             )
         }
 
@@ -74,6 +70,10 @@ fun AppNavigation() {
 
         composable("newNote") {
             NewNoteScreen()
+        }
+
+        composable("preferences") {
+            preferenceScreen(navController = navController)
         }
 
     }
