@@ -1,6 +1,7 @@
 package com.cs407.lazynotes.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,7 +27,10 @@ import androidx.compose.ui.unit.sp
 import com.cs407.lazynotes.R
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    onNavigateToHome: () -> Unit,
+    onNavigateToPreferences: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -51,7 +55,7 @@ fun SettingsScreen() {
                 )
 
                 Button(
-                    onClick = {},
+                    onClick = { onNavigateToHome() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
@@ -114,7 +118,8 @@ fun SettingsScreen() {
             Icon(
                 imageVector = Icons.Default.ArrowForward,
                 contentDescription = "Go to Preference settings",
-                tint = Color.Black
+                tint = Color.Black,
+                modifier = Modifier.clickable { onNavigateToPreferences() }
             )
         }
     }

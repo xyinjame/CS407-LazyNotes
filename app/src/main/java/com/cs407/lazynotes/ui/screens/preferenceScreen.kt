@@ -31,7 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun preferenceScreen() {
+fun preferenceScreen(
+    onNavigateToHome: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -54,7 +56,7 @@ fun preferenceScreen() {
                         .padding(start = 15.dp)
                 )
                 Button(
-                    onClick = {},
+                    onClick = { onNavigateToHome() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {

@@ -2,7 +2,14 @@ package com.cs407.lazynotes.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,8 +20,23 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,7 +58,11 @@ data class Folder(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onNavigateToViewNotes: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onNavigateToNew: () -> Unit
+) {
     // Sample data - this will be replaced with real data later
     val folders = remember {
         listOf(
@@ -72,7 +98,7 @@ fun HomeScreen() {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Navigate to settings */ }) {
+                    IconButton(onClick = { onNavigateToSettings() }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings"
@@ -86,7 +112,7 @@ fun HomeScreen() {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Add new note */ },
+                onClick = { onNavigateToNew() },
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
@@ -127,7 +153,8 @@ fun HomeScreen() {
                             } else {
                                 expandedFolders + folder.id
                             }
-                        }
+                        },
+                        onNoteClick = { onNavigateToViewNotes() }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -172,7 +199,8 @@ fun SearchBar(
 fun FolderItem(
     folder: Folder,
     isExpanded: Boolean,
-    onToggleExpand: () -> Unit
+    onToggleExpand: () -> Unit,
+    onNoteClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -213,7 +241,10 @@ fun FolderItem(
                     .padding(top = 4.dp)
             ) {
                 folder.notes.forEach { note ->
-                    NoteItem(note = note)
+                    NoteItem(
+                        note = note,
+                        onClick = {onNoteClick()}
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }
@@ -221,12 +252,16 @@ fun FolderItem(
     }
 }
 
+
 @Composable
-fun NoteItem(note: Note) {
+fun NoteItem(
+    note: Note,
+    onClick: () -> Unit
+    ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* TODO: Navigate to note detail */ },
+            .clickable { onClick() },
         color = Color(0xFFB0B0B0),
         shape = RoundedCornerShape(4.dp)
     ) {

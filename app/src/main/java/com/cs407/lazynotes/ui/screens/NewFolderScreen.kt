@@ -34,7 +34,9 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun NewFolderScreen() {
+fun NewFolderScreen(
+    onNavigateToHome: () -> Unit
+) {
 
     // Text variable to remember and display input by user
     var text by remember {mutableStateOf("")}
@@ -74,7 +76,7 @@ fun NewFolderScreen() {
 
                 // Button to exit menu
                 Button(
-                    onClick = {},
+                    onClick = { onNavigateToHome() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
@@ -104,7 +106,7 @@ fun NewFolderScreen() {
 
         // Create button to create folder with specified name
         OutlinedButton(
-            onClick = {},
+            onClick = { onNavigateToHome() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray,
             ),

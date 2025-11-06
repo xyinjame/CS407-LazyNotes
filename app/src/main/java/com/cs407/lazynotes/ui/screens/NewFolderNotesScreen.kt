@@ -25,11 +25,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.cs407.lazynotes.R
 
 
 @Composable
-fun NewFolderNotesScreen() {
+fun NewFolderNotesScreen(
+    navController: NavController,
+    onNavigateToNewNote: () -> Unit,
+    onNavigateToNewFolder: () -> Unit
+) {
 
     // Main container that houses all elements
     Column(
@@ -66,7 +71,7 @@ fun NewFolderNotesScreen() {
 
                 // Button to exit menu
                 Button(
-                    onClick = {},
+                    onClick = { navController.popBackStack() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
@@ -83,7 +88,7 @@ fun NewFolderNotesScreen() {
 
         // New notes button
         OutlinedButton(
-            onClick = {},
+            onClick = { onNavigateToNewNote() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray,
             ),
@@ -100,7 +105,7 @@ fun NewFolderNotesScreen() {
 
         // New folder button
         OutlinedButton(
-            onClick = {},
+            onClick = { onNavigateToNewFolder() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray,
             ),

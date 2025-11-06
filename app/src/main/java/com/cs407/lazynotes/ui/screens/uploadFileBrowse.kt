@@ -29,7 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun uploadFileBrowse() {
+fun uploadFileBrowse(
+    onNavigateToHome: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -51,7 +53,7 @@ fun uploadFileBrowse() {
                 )
 
                 Button(
-                    onClick = {},
+                    onClick = { onNavigateToHome() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {

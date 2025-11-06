@@ -34,7 +34,10 @@ import com.cs407.lazynotes.R
 
 
 @Composable
-fun FolderSelectScreen() {
+fun FolderSelectScreen(
+    onNavigateToHome: () -> Unit,
+    onNavigateToNewFolder: () -> Unit
+) {
 
     val folderNames = remember{ mutableStateListOf<String>() }
 
@@ -72,7 +75,7 @@ fun FolderSelectScreen() {
 
                 // Button to exit menu
                 Button(
-                    onClick = {},
+                    onClick = { onNavigateToHome() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
@@ -89,7 +92,7 @@ fun FolderSelectScreen() {
 
         // New folder button gives user the option to create a new folder to put the notes in
         OutlinedButton(
-            onClick = {},
+            onClick = { onNavigateToNewFolder() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray,
             ),
