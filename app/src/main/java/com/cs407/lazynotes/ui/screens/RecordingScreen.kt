@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 private enum class RecordState { Idle, Recording, Paused }
 
@@ -38,8 +39,8 @@ private enum class RecordState { Idle, Recording, Paused }
 @Composable
 fun RecordingScreen(
     modifier: Modifier = Modifier,
-    onClose: () -> Unit = {},
-    onDoneClick: () -> Unit = {}
+    onNavigateToHome: () -> Unit,
+    onNavigateToFolderSelect: () -> Unit
 ) {
     var state by rememberSaveable { mutableStateOf(RecordState.Idle) }
 
@@ -49,7 +50,7 @@ fun RecordingScreen(
             TopAppBar(
                 title = { Text("New Recording") },
                 // Close button in the app bar
-                actions = { TextButton(onClick = onClose) { Text("Close") } },
+                actions = { TextButton(onClick = { onNavigateToHome() }) { Text("Close") } },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -64,7 +65,7 @@ fun RecordingScreen(
                         // Toggle between Recording and Paused when user taps PAUSE / RESUME
                         state = if (state == RecordState.Recording) RecordState.Paused else RecordState.Recording
                     },
-                    onDone = onDoneClick
+                    onDone = { onNavigateToFolderSelect() }
                 )
             }
         }

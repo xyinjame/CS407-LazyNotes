@@ -8,13 +8,16 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.cs407.lazynotes.ui.screens.FolderSelectScreen
 import com.cs407.lazynotes.ui.screens.HomeScreen
 import com.cs407.lazynotes.ui.screens.NewFolderNotesScreen
 import com.cs407.lazynotes.ui.screens.NewFolderScreen
 import com.cs407.lazynotes.ui.screens.NewNoteScreen
 import com.cs407.lazynotes.ui.screens.NoteScreen
+import com.cs407.lazynotes.ui.screens.RecordingScreen
 import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
+import com.cs407.lazynotes.ui.screens.uploadFileScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 
 class MainActivity : ComponentActivity() {
@@ -69,11 +72,33 @@ fun AppNavigation() {
         }
 
         composable("newNote") {
-            NewNoteScreen()
+            NewNoteScreen(
+                onNavigateToHome = {navController.navigate("home")},
+                onNavigateToRecord = {navController.navigate("record")},
+                onNavigateToUpload = {navController.navigate("upload")}
+            )
         }
 
         composable("preferences") {
             preferenceScreen(navController = navController)
+        }
+
+        composable("record") {
+            RecordingScreen(
+                onNavigateToHome = {navController.navigate("home")},
+                onNavigateToFolderSelect = {navController.navigate("folderSelect")}
+            )
+        }
+
+        composable("upload") {
+            uploadFileScreen(navController = navController)
+        }
+
+        composable("folderSelect") {
+            FolderSelectScreen(
+                onNavigateToHome = {navController.navigate("home")},
+                onNavigateToNewFolder = {navController.navigate("newFolder")}
+            )
         }
 
     }

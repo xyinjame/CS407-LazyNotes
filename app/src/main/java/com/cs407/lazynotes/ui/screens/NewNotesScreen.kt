@@ -25,11 +25,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.cs407.lazynotes.R
 
 
 @Composable
-fun NewNoteScreen() {
+fun NewNoteScreen(
+    onNavigateToHome: () -> Unit,
+    onNavigateToRecord: () -> Unit,
+    onNavigateToUpload: () -> Unit
+) {
 
     // Main container that houses all elements
     Column(
@@ -66,7 +71,7 @@ fun NewNoteScreen() {
 
                 // Button to exit menu
                 Button(
-                    onClick = {},
+                    onClick = { onNavigateToHome() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
@@ -83,7 +88,7 @@ fun NewNoteScreen() {
 
         // Record audio button
         OutlinedButton(
-            onClick = {},
+            onClick = { onNavigateToRecord() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray,
             ),
@@ -100,7 +105,7 @@ fun NewNoteScreen() {
 
         // Upload audio button
         OutlinedButton(
-            onClick = {},
+            onClick = { onNavigateToUpload() },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.DarkGray,
             ),
