@@ -31,11 +31,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.cs407.lazynotes.R
 
 
 @Composable
-fun NotesScreen() {
+fun NoteScreen(
+    navController: NavController
+) {
 
     // Variables used to change the text of each button and transcript
     var sliderPosition by remember {mutableStateOf(0f)}
@@ -84,7 +87,7 @@ fun NotesScreen() {
 
                 // Button to exit note
                 Button(
-                    onClick = {},
+                    onClick = { navController.popBackStack() },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
