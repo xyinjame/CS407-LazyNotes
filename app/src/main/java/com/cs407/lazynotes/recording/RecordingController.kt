@@ -1,4 +1,4 @@
-package com.cs407.lazynotes.ui.recording
+package com.cs407.lazynotes.recording
 
 import android.content.Context
 import android.media.MediaRecorder
