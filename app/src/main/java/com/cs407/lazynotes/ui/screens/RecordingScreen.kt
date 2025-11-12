@@ -39,7 +39,10 @@ private enum class RecordState { Idle, Recording, Paused }
 fun RecordingScreen(
     modifier: Modifier = Modifier,
     onNavigateToHome: () -> Unit,
-    onNavigateToFolderSelect: () -> Unit
+    onNavigateToFolderSelect: () -> Unit,
+    onStartRecording: () -> Unit = {},
+    onPause: () -> Unit = {},
+    onResume: () -> Unit = {}
 ) {
     var state by rememberSaveable { mutableStateOf(RecordState.Idle) }
 
@@ -62,7 +65,13 @@ fun RecordingScreen(
                     isPaused = state == RecordState.Paused,
                     onPauseResume = {
                         // Toggle between Recording and Paused when user taps PAUSE / RESUME
-                        state = if (state == RecordState.Recording) RecordState.Paused else RecordState.Recording
+                        state = if (state == RecordState.Recording) {
+                            onPause()
+                            RecordState.Paused
+                        } else {
+                            onResume()
+                            RecordState.Recording
+                        }
                     },
                     onDone = { onNavigateToFolderSelect() }
                 )
@@ -99,7 +108,10 @@ fun RecordingScreen(
                 // - Visible only in Idle state, labeled "START"
                 // - Clicking it moves the screen into Recording state
                 if (state == RecordState.Idle) {
-                    CenterCircleButton(label = "START") { state = RecordState.Recording }
+                    CenterCircleButton(label = "START") {
+                        onStartRecording()
+                        state = RecordState.Recording
+                    }
                 } else {
                     // When Recording or Paused, hide the center button
                     Spacer(Modifier.height(96.dp))

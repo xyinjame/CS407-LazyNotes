@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.cs407.lazynotes.recording.RecordingRoute
 import com.cs407.lazynotes.ui.screens.FolderSelectScreen
 import com.cs407.lazynotes.ui.screens.HomeScreen
 import com.cs407.lazynotes.ui.screens.NewFolderNotesScreen
@@ -85,9 +86,9 @@ fun AppNavigation() {
         }
 
         composable("record") {
-            RecordingScreen(
-                onNavigateToHome = {navController.navigate("home")},
-                onNavigateToFolderSelect = {navController.navigate("folderSelect")}
+            RecordingRoute(
+                onNavigateToHome = { navController.navigate("home") },
+                onNavigateToFolderSelect = { navController.navigate("folderSelect") }
             )
         }
 
