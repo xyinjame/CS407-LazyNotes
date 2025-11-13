@@ -43,6 +43,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cs407.lazynotes.ui.theme.MainBackground
+import com.cs407.lazynotes.ui.theme.TopBar
 
 // Data classes for our app
 data class Note(
@@ -106,7 +108,7 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFE0E0E0)
+                    containerColor = TopBar
                 )
             )
         },
@@ -126,7 +128,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5F5F5))
+                .background(MainBackground)
         ) {
             // Search Bar
             SearchBar(
@@ -210,7 +212,7 @@ fun FolderItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onToggleExpand() },
-            color = Color(0xFFD0D0D0),
+            color = TopBar,
             shape = RoundedCornerShape(4.dp)
         ) {
             Row(
@@ -262,7 +264,7 @@ fun NoteItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        color = Color(0xFFB0B0B0),
+        color = Color.LightGray,
         shape = RoundedCornerShape(4.dp)
     ) {
         Text(

@@ -51,6 +51,7 @@ fun AppNavigation() {
 
         composable("settings") {
             SettingsScreen(
+                navController = navController,
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToPreferences = {navController.navigate("preferences")}
             )
@@ -65,15 +66,22 @@ fun AppNavigation() {
         }
 
         composable("viewNote") {
-            NoteScreen(navController = navController)
+            NoteScreen(
+                navController = navController,
+                onNavigateToHome = {navController.navigate("home")}
+            )
         }
 
         composable("newFolder") {
-            NewFolderScreen(onNavigateToHome = {navController.navigate("home")})
+            NewFolderScreen(
+                navController = navController,
+                onNavigateToHome = {navController.navigate("home")}
+            )
         }
 
         composable("newNote") {
             NewNoteScreen(
+                navController = navController,
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToRecord = {navController.navigate("record")},
                 onNavigateToUpload = {navController.navigate("upload")}
@@ -86,6 +94,7 @@ fun AppNavigation() {
 
         composable("record") {
             RecordingScreen(
+                navController = navController,
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToFolderSelect = {navController.navigate("folderSelect")}
             )
@@ -93,6 +102,7 @@ fun AppNavigation() {
 
         composable("upload") {
             uploadFileScreen(
+                navController = navController,
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}
             )
@@ -100,13 +110,17 @@ fun AppNavigation() {
 
         composable("folderSelect") {
             FolderSelectScreen(
+                navController = navController,
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToNewFolder = {navController.navigate("newFolder")}
             )
         }
 
         composable("uploadFileBrowse") {
-            uploadFileBrowse(onNavigateToHome = {navController.navigate("home")})
+            uploadFileBrowse(
+                navController = navController,
+                onNavigateToHome = {navController.navigate("home")}
+            )
         }
 
     }
