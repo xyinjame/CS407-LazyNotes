@@ -69,11 +69,15 @@ fun AppNavigation() {
         }
 
         composable("newFolder") {
-            NewFolderScreen(onNavigateToHome = {navController.navigate("home")})
+            NewFolderScreen(
+                navController = navController,
+                onNavigateToHome = {navController.navigate("home")}
+            )
         }
 
         composable("newNote") {
             NewNoteScreen(
+                navController = navController,
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToRecord = {navController.navigate("record")},
                 onNavigateToUpload = {navController.navigate("upload")}
