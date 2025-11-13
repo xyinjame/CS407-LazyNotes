@@ -7,7 +7,7 @@ LazyNotes is a mobile lecture companion app that records audio, transcribes it i
 |------|--------|--------|
 | James Yin | xyin63@wisc.edu | xyinjame |
 | Tim Yang | zyang785@wisc.edu | TimShakespeare |
-| Eric Wang | ewang65@wisc.edu | NotAsura |
+| Eric Wang | ewang65@wisc.edu | ewang2005 |
 | Yawen Zhang | yzhang2863@wisc.edu | yzhang2863 |
 
 ## Overview
