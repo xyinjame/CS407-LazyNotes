@@ -51,6 +51,7 @@ fun AppNavigation() {
 
         composable("settings") {
             SettingsScreen(
+                navController = navController,
                 onNavigateToHome = {navController.navigate("home")},
                 onNavigateToPreferences = {navController.navigate("preferences")}
             )
@@ -65,7 +66,10 @@ fun AppNavigation() {
         }
 
         composable("viewNote") {
-            NoteScreen(navController = navController)
+            NoteScreen(
+                navController = navController,
+                onNavigateToHome = {navController.navigate("home")}
+            )
         }
 
         composable("newFolder") {
