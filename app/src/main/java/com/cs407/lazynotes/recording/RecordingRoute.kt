@@ -10,7 +10,8 @@ import com.cs407.lazynotes.ui.screens.RecordingScreen
 import androidx.navigation.NavController
 
 /*
-Recordings are saved here: Click on Device Explorer -> /sdcard/Android/data/com.cs407.lazynotes/files
+Recordings are saved here: Click on Device Explorer ->
+/storage/emulated/0/Android/data/com.cs407.lazynotes/files/Music/recordings
 Make sure you go into Extended Controls -> Microphone -> Enable Host Microphone Access to record audio
  */
 @Composable

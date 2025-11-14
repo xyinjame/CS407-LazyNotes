@@ -3,10 +3,20 @@ package com.cs407.lazynotes.recording
 import android.content.Context
 import android.media.MediaRecorder
 import java.io.File
+import android.os.Environment
 
-private fun createAudioFile(context: Context): File {
-    val dir = context.getExternalFilesDir(null) ?: context.filesDir
-    return File(dir, "recording_${System.currentTimeMillis()}.m4a")
+fun createAudioFile(context: Context): File {
+    // App-specific external "Music" directory
+    val baseDir = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC)
+        ?: context.filesDir
+    // Keep in "recordings" subfolder
+    val recordingsDir = File(baseDir, "recordings").apply {
+        if (!exists()) {
+            mkdirs()
+        }
+    }
+
+    return File(recordingsDir, "recording_${System.currentTimeMillis()}.m4a")
 }
 
 class RecordingController(private val context: Context) {
