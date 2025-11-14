@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cs407.lazynotes.ui.theme.MainBackground
 import com.cs407.lazynotes.ui.theme.TopBar
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 
 private enum class RecordState { Idle, Recording, Paused }
 
@@ -56,6 +58,22 @@ fun RecordingScreen(
     onResume: () -> Unit = {}
 ) {
     var state by rememberSaveable { mutableStateOf(RecordState.Idle) }
+
+    var elapsedSeconds by rememberSaveable { mutableStateOf(0) }
+
+    // Timer pauses when recording pauses
+    LaunchedEffect(state) {
+        if (state == RecordState.Recording) {
+            while (true) {
+                delay(1_000)
+                elapsedSeconds += 1
+            }
+        }
+    }
+
+    val minutes = elapsedSeconds / 60
+    val seconds = elapsedSeconds % 60
+    val timeText = String.format("%02d:%02d", minutes, seconds)
 
     Scaffold(
         topBar = {
@@ -133,6 +151,14 @@ fun RecordingScreen(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
+                // Timer
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = timeText,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
                 Spacer(Modifier.weight(1f))
 
                 // Center circle button:
@@ -140,6 +166,7 @@ fun RecordingScreen(
                 // - Clicking it moves the screen into Recording state
                 if (state == RecordState.Idle) {
                     CenterCircleButton(label = "START") {
+                        elapsedSeconds = 0
                         onStartRecording()
                         state = RecordState.Recording
                     }
