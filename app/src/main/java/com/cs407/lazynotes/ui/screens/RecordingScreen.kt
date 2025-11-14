@@ -44,6 +44,10 @@ import com.cs407.lazynotes.ui.theme.TopBar
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
 
+/*
+Recordings are saved here: Click on Device Explorer -> /sdcard/Android/data/com.cs407.lazynotes/files
+Make sure you go into Extended Controls -> Microphone -> Enable Host Microphone Access to record audio
+ */
 private enum class RecordState { Idle, Recording, Paused }
 
 @OptIn(ExperimentalMaterial3Api::class)

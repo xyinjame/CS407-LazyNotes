@@ -11,6 +11,7 @@ import androidx.navigation.NavController
 
 /*
 Recordings are saved here: Click on Device Explorer -> /sdcard/Android/data/com.cs407.lazynotes/files
+Make sure you go into Extended Controls -> Microphone -> Enable Host Microphone Access to record audio
  */
 @Composable
 fun RecordingRoute(
