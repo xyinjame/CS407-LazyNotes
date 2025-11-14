@@ -43,6 +43,7 @@ import com.cs407.lazynotes.ui.theme.MainBackground
 import com.cs407.lazynotes.ui.theme.TopBar
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
+import androidx.compose.material3.AlertDialog
 
 /*
 Recordings are saved here: Click on Device Explorer -> /sdcard/Android/data/com.cs407.lazynotes/files
@@ -62,7 +63,7 @@ fun RecordingScreen(
     onResume: () -> Unit = {}
 ) {
     var state by rememberSaveable { mutableStateOf(RecordState.Idle) }
-
+    var showDoneConfirm by rememberSaveable { mutableStateOf(false) }
     var elapsedSeconds by rememberSaveable { mutableStateOf(0) }
 
     // Timer pauses when recording pauses
@@ -125,7 +126,7 @@ fun RecordingScreen(
                             RecordState.Recording
                         }
                     },
-                    onDone = { onNavigateToFolderSelect() }
+                    onDone = { showDoneConfirm = true }
                 )
             }
         }
@@ -180,6 +181,33 @@ fun RecordingScreen(
                 }
 
                 Spacer(Modifier.weight(1f))
+            }
+
+            if (showDoneConfirm) {
+                AlertDialog(
+                    onDismissRequest = { showDoneConfirm = false },
+                    title = { Text("Finish recording?") },
+                    text = {
+                        Text("Are you sure you want to stop and save this recording?")
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDoneConfirm = false
+                                onNavigateToFolderSelect()
+                            }
+                        ) {
+                            Text("Yes")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showDoneConfirm = false }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                )
             }
         }
     }
