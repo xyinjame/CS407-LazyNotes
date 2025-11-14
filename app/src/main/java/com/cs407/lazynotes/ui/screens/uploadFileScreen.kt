@@ -5,22 +5,21 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,92 +27,78 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.cs407.lazynotes.ui.theme.MainBackground
+import com.cs407.lazynotes.ui.theme.TopBar
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun uploadFileScreen(
+    navController: NavController,
     onNavigateToHome: () -> Unit,
     onNavigateToUploadFileBrowse: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.LightGray)
-                .padding(10.dp, 25.dp, 10.dp, 15.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "New Recording",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-
-                Button(
-                    onClick = { onNavigateToHome() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = Color.Black,
-                        modifier = Modifier.size(24.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Upload Recording",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            }
-        }
-
-        Divider(
-            color = Color.Black,
-            thickness = 1.dp,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Gray)
-                .height(60.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Upload",
-                fontSize = 16.sp,
-                color = Color.Black,
-                modifier = Modifier.fillMaxWidth()
-                    .wrapContentWidth(Alignment.CenterHorizontally)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onNavigateToHome() }) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Home"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = TopBar
+                )
             )
         }
-
-        Box(
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(Color.White)
-                .padding(bottom = 80.dp),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MainBackground)
         ) {
+            // Main upload area
             Box(
                 modifier = Modifier
-                    .size(120.dp)
-                    .background(Color.Transparent)
-                    .border(2.dp, Color.Black)
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Upload File",
-                    tint = Color.Black,
+                Box(
                     modifier = Modifier
-                        .size(60.dp)
-                        .align(Alignment.Center)
-                        .clickable{onNavigateToUploadFileBrowse()}
-                )
+                        .size(140.dp)
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .border(2.dp, Color(0xFFD0D0D0), RoundedCornerShape(8.dp))
+                        .clickable { onNavigateToUploadFileBrowse() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Upload File",
+                        tint = Color(0xFF757575),
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
             }
         }
     }

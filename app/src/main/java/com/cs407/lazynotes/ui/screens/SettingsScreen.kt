@@ -2,20 +2,23 @@ package com.cs407.lazynotes.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,102 +27,64 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.cs407.lazynotes.R
+import com.cs407.lazynotes.ui.theme.MainBackground
+import com.cs407.lazynotes.ui.theme.TopBar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    navController: NavController,
     onNavigateToHome: () -> Unit,
     onNavigateToPreferences: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .background(Color.White)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.LightGray)
-                .padding(10.dp, 25.dp, 10.dp, 15.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = stringResource(id = R.string.settings),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 15.dp)
-                )
-
-                Button(
-                    onClick = { onNavigateToHome() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Home,
-                        contentDescription = "Home",
-                        tint = Color.Black
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.settings),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            }
-        }
-
-        Divider(
-            color = Color.Black,
-            thickness = 1.dp,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Gray)
-                .padding(15.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.recording),
-                fontSize = 16.sp,
-                color = Color.Black,
-                modifier = Modifier.weight(1f)
-            )
-
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Go to Recording settings",
-                tint = Color.Black
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = TopBar
+                )
             )
         }
-
-        Divider(
-            color = Color.Black,
-            thickness = 1.dp,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Gray)
-                .padding(15.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFF5F5F5))
+                .padding(16.dp)
         ) {
-            Text(
-                text = stringResource(id = R.string.preference),
-                fontSize = 16.sp,
-                color = Color.Black,
-                modifier = Modifier.weight(1f)
+            // Recording Settings Option
+            SelectionCard(
+                title = stringResource(id = R.string.recording),
+                onClick = { /* Navigate to recording settings */ }
             )
 
-            Icon(
-                imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Go to Preference settings",
-                tint = Color.Black,
-                modifier = Modifier.clickable { onNavigateToPreferences() }
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MainBackground
+            )
+
+            // Preference Settings Option
+            SelectionCard(
+                title = stringResource(id = R.string.preference),
+                onClick = { onNavigateToPreferences() }
             )
         }
     }

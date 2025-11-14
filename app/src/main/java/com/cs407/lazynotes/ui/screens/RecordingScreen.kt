@@ -13,8 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -30,7 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.cs407.lazynotes.ui.theme.MainBackground
+import com.cs407.lazynotes.ui.theme.TopBar
 
 private enum class RecordState { Idle, Recording, Paused }
 
@@ -38,6 +48,7 @@ private enum class RecordState { Idle, Recording, Paused }
 @Composable
 fun RecordingScreen(
     modifier: Modifier = Modifier,
+    navController: NavController,
     onNavigateToHome: () -> Unit,
     onNavigateToFolderSelect: () -> Unit,
     onStartRecording: () -> Unit = {},
@@ -48,13 +59,32 @@ fun RecordingScreen(
 
     Scaffold(
         topBar = {
-            // Top bar with title "New Recording" and a Close text button on the right
             TopAppBar(
-                title = { Text("New Recording") },
-                // Close button in the app bar
-                actions = { TextButton(onClick = { onNavigateToHome() }) { Text("Close") } },
+                title = {
+                    Text(
+                        text = "New Recording",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onNavigateToHome() }) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Home"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = Color(0xFFE0E0E0)
                 )
             )
         },
@@ -83,6 +113,7 @@ fun RecordingScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(inner)
+                .background(MainBackground)
         ) {
             Column(
                 modifier = Modifier
@@ -131,13 +162,17 @@ private fun CenterCircleButton(
     OutlinedButton(
         onClick = onClick,
         shape = CircleShape,
-        modifier = Modifier.size(96.dp),
+        modifier = Modifier.size(120.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = Color.White,
+            contentColor = Color(0xFF6200EE)
         ),
     ) {
-        Text(label)
+        Text(
+            label,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -150,8 +185,8 @@ private fun BottomBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .background(MaterialTheme.colorScheme.error),
+            .height(64.dp)
+            .background(TopBar),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextButton(
@@ -160,7 +195,7 @@ private fun BottomBar(
                 .weight(1f)
                 .fillMaxHeight()
         ) {
-            Text(if (isPaused) "RESUME" else "PAUSE", color = MaterialTheme.colorScheme.onError)
+            Text(if (isPaused) "RESUME" else "PAUSE", color = Color.Black)
         }
         Box(
             Modifier
@@ -172,9 +207,9 @@ private fun BottomBar(
             onClick = onDone,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight()
+                .fillMaxHeight(),
         ) {
-            Text("DONE", color = MaterialTheme.colorScheme.onError)
+            Text("DONE", color = Color.Black)
         }
     }
 }
