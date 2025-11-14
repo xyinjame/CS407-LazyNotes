@@ -7,9 +7,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import com.cs407.lazynotes.recording.RecordingController
 import com.cs407.lazynotes.ui.screens.RecordingScreen
+import androidx.navigation.NavController
 
+/*
+Recordings are saved here: Click on Device Explorer -> /sdcard/Android/data/com.cs407.lazynotes/files
+ */
 @Composable
 fun RecordingRoute(
+    navController: NavController,
     onNavigateToHome: () -> Unit,
     onNavigateToFolderSelect: () -> Unit
 ) {
@@ -26,6 +31,7 @@ fun RecordingRoute(
     }
 
     RecordingScreen(
+        navController = navController,
         onNavigateToHome = {
             controller.discard()
             onNavigateToHome()
