@@ -93,11 +93,17 @@ fun AppNavigation() {
             preferenceScreen(onNavigateToHome = {navController.navigate("home")})
         }
 
+        // After finishing a recording, remove "record" from the back stack
+        // so you can't go back into a finished recording session.
         composable("record") {
             RecordingRoute(
                 navController = navController,
                 onNavigateToHome = { navController.navigate("home") },
-                onNavigateToFolderSelect = { navController.navigate("folderSelect") }
+                onNavigateToFolderSelect = {
+                    navController.navigate("folderSelect") {
+                        popUpTo("record") { inclusive = true }
+                    }
+                }
             )
         }
 
