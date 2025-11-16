@@ -41,7 +41,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cs407.lazynotes.ui.theme.MainBackground
 import com.cs407.lazynotes.ui.theme.TopBar
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import androidx.compose.material3.AlertDialog
 
+/*
+Recordings are saved here: Click on Device Explorer ->
+/storage/emulated/0/Android/data/com.cs407.lazynotes/files/Music/recordings
+Make sure you go into Extended Controls -> Microphone -> Enable Host Microphone Access to record audio
+ */
 private enum class RecordState { Idle, Recording, Paused }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,9 +58,28 @@ fun RecordingScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     onNavigateToHome: () -> Unit,
-    onNavigateToFolderSelect: () -> Unit
+    onNavigateToFolderSelect: () -> Unit,
+    onStartRecording: () -> Unit = {},
+    onPause: () -> Unit = {},
+    onResume: () -> Unit = {}
 ) {
     var state by rememberSaveable { mutableStateOf(RecordState.Idle) }
+    var showDoneConfirm by rememberSaveable { mutableStateOf(false) }
+    var elapsedSeconds by rememberSaveable { mutableStateOf(0) }
+
+    // Timer pauses when recording pauses
+    LaunchedEffect(state) {
+        if (state == RecordState.Recording) {
+            while (true) {
+                delay(1_000)
+                elapsedSeconds += 1
+            }
+        }
+    }
+
+    val minutes = elapsedSeconds / 60
+    val seconds = elapsedSeconds % 60
+    val timeText = String.format("%02d:%02d", minutes, seconds)
 
     Scaffold(
         topBar = {
@@ -92,9 +119,15 @@ fun RecordingScreen(
                     isPaused = state == RecordState.Paused,
                     onPauseResume = {
                         // Toggle between Recording and Paused when user taps PAUSE / RESUME
-                        state = if (state == RecordState.Recording) RecordState.Paused else RecordState.Recording
+                        state = if (state == RecordState.Recording) {
+                            onPause()
+                            RecordState.Paused
+                        } else {
+                            onResume()
+                            RecordState.Recording
+                        }
                     },
-                    onDone = { onNavigateToFolderSelect() }
+                    onDone = { showDoneConfirm = true }
                 )
             }
         }
@@ -124,19 +157,58 @@ fun RecordingScreen(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
+                // Timer
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = timeText,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
                 Spacer(Modifier.weight(1f))
 
                 // Center circle button:
                 // - Visible only in Idle state, labeled "START"
                 // - Clicking it moves the screen into Recording state
                 if (state == RecordState.Idle) {
-                    CenterCircleButton(label = "START") { state = RecordState.Recording }
+                    CenterCircleButton(label = "START") {
+                        elapsedSeconds = 0
+                        onStartRecording()
+                        state = RecordState.Recording
+                    }
                 } else {
                     // When Recording or Paused, hide the center button
                     Spacer(Modifier.height(96.dp))
                 }
 
                 Spacer(Modifier.weight(1f))
+            }
+
+            if (showDoneConfirm) {
+                AlertDialog(
+                    onDismissRequest = { showDoneConfirm = false },
+                    title = { Text("Finish recording?") },
+                    text = {
+                        Text("Are you sure you want to stop and save this recording?")
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDoneConfirm = false
+                                onNavigateToFolderSelect()
+                            }
+                        ) {
+                            Text("Yes")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showDoneConfirm = false }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                )
             }
         }
     }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.cs407.lazynotes.recording.RecordingRoute
 import com.cs407.lazynotes.ui.screens.FolderSelectScreen
 import com.cs407.lazynotes.ui.screens.HomeScreen
 import com.cs407.lazynotes.ui.screens.NewFolderNotesScreen
@@ -92,11 +93,17 @@ fun AppNavigation() {
             preferenceScreen(onNavigateToHome = {navController.navigate("home")})
         }
 
+        // After finishing a recording, remove "record" from the back stack
+        // so you can't go back into a finished recording session.
         composable("record") {
-            RecordingScreen(
+            RecordingRoute(
                 navController = navController,
-                onNavigateToHome = {navController.navigate("home")},
-                onNavigateToFolderSelect = {navController.navigate("folderSelect")}
+                onNavigateToHome = { navController.navigate("home") },
+                onNavigateToFolderSelect = {
+                    navController.navigate("folderSelect") {
+                        popUpTo("record") { inclusive = true }
+                    }
+                }
             )
         }
 
