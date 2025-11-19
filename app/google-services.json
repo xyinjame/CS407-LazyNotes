@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "90478246616",
+    "project_id": "lazynotes-ae8ae",
+    "storage_bucket": "lazynotes-ae8ae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90478246616:android:3b655a78d46d92f8d735ad",
+        "android_client_info": {
+          "package_name": "com.cs407.lazynotes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCoZgE0IkMJRrEPd9EKkXKYmGjjKmKDKjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
