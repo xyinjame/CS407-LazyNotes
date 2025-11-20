@@ -1,22 +1,38 @@
 package com.cs407.lazynotes
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.cs407.lazynotes.data.UserViewModel
 import com.cs407.lazynotes.recording.RecordingRoute
 import com.cs407.lazynotes.ui.screens.*
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = Firebase.auth
         enableEdgeToEdge()
         setContent {
             LazyNotesTheme {
@@ -27,45 +43,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation() {
-    val navController = rememberNavController()
-    val context = LocalContext.current
-    val loginViewModel: UserViewModel = viewModel(
-        factory = UserViewModelFactory(context.applicationContext as android.app.Application)
-    )
+fun AppNavigation(viewModel: UserViewModel = viewModel(),
+                  navController: NavHostController = rememberNavController()) {
+
+    val userState by viewModel.userState.collectAsState()
+
+    LaunchedEffect(userState) {
+        if (userState.id == 0 || userState.name.isEmpty()) {
+            navController.navigate("login") {
+                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+            }
+        } else {
+            navController.navigate("home_main") {
+                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+            }
+        }
+    }
 
     NavHost(
         navController = navController,
         startDestination = "login"
     ) {
         composable("login") {
-            LoginPage(
-                viewModel = loginViewModel,
-                onNavigateToAskName = {
-                    navController.navigate("askName") { popUpTo("login") { inclusive = true } }
-                },
-                onNavigateToHome = {
-                    navController.navigate("home_main") { popUpTo("login") { inclusive = true } }
-                }
-            )
+            LoginPage(Modifier) { viewModel.setUser(it) }
         }
-        composable("askName") {
-            AskNamePage(
-                viewModel = loginViewModel,
-                onNavigateToHome = {
-                    navController.navigate("home_main") { popUpTo("askName") { inclusive = true } }
-                }
-            )
-        }
-        composable("login_home") {
-            HomePage(
-                viewModel = loginViewModel,
-                onNavigateToLogin = {
-                    navController.navigate("login") { popUpTo("login_home") { inclusive = true } }
-                }
-            )
-        }
-
         composable("home_main") {
             HomeScreen(
                 onNavigateToSettings = { navController.navigate("settings") },
@@ -77,7 +78,8 @@ fun AppNavigation() {
             SettingsScreen(
                 navController = navController,
                 onNavigateToHome = { navController.navigate("home_main") },
-                onNavigateToPreferences = { navController.navigate("preferences") }
+                onNavigateToPreferences = { navController.navigate("preferences") },
+                navOut = { Firebase.auth.signOut() }
             )
         }
         composable("newFolderNotes") {

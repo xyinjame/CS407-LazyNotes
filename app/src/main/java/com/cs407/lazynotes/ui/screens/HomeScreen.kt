@@ -63,7 +63,7 @@ data class Folder(
 fun HomeScreen(
     onNavigateToViewNotes: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToNew: () -> Unit
+    onNavigateToNew: () -> Unit,
 ) {
     // Sample data - this will be replaced with real data later
     val folders = remember {

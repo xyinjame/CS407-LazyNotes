@@ -28,4 +28,5 @@
     <string name="delete_account">Delete Account</string>
     <string name="edit_greetings">Edit Greetings</string>
     <string name="enter_greeting_hint">Enter Greetings</string>
+    <string name="note_database">noteDatabase</string>
 </resources>
