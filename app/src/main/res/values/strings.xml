@@ -24,4 +24,8 @@
     <string name="login_button">Log In or Sign Up</string>
     <string name="name_hint">Enter Name</string>
     <string name="confirm_button">Confirm</string>
+    <string name="logout">Log Out</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="edit_greetings">Edit Greetings</string>
+    <string name="enter_greeting_hint">Enter Greetings</string>
 </resources>
