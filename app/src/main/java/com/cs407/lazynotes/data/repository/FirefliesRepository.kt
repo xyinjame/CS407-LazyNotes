@@ -10,7 +10,6 @@ class FirefliesRepository(
     private val apiService: FirefliesService,
     private val storageService: StorageService
 ) {
-    // ... (API_KEY 保持不变)
 
     /**
      * 1. Upload audio to Firebase Storage。
@@ -21,7 +20,7 @@ class FirefliesRepository(
      */
     suspend fun processRecordingForTranscription(localFile: File, title: String): String? {
 
-        // 1. 文件上传到 Firebase
+        // 1. Upload to Firebase
         val publicAudioUrl = storageService.uploadAudioFile(localFile)
 
         if (publicAudioUrl.isNullOrEmpty()) {
@@ -29,14 +28,14 @@ class FirefliesRepository(
             return null
         }
 
-        // 2. Fireflies API 调用
-        val authHeader = "Bearer $API_KEY"
+        // 2. Fireflies API
+        val authHeader = "Bearer ${BuildConfig.FIREFLIES_API_KEY}"
         val clientRefId = localFile.name // use file name as reference ID
 
-        // 使用 'uploadAudio' mutation
+        // Use 'uploadAudio' mutation
         val mutation = """
-            mutation uploadAudio(\$input: AudioUploadInput) { 
-                uploadAudio(input: \$input) {
+            mutation uploadAudio(${'$'}input: AudioUploadInput) { 
+                uploadAudio(input: ${'$'}input) {
                     success
                     title
                     message

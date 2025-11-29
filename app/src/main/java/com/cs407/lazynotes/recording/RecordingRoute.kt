@@ -66,7 +66,7 @@ fun RecordingRoute(
 
                     if (clientRefId != null) {
                         // Success: The transcription job has been submitted. Clean up local file.
-                        audioFile.delete()
+                        // audioFile.delete() // <-- This line is now commented out
                         onNavigateToFolderSelect()
                     } else {
                         // Failure: Handle error (e.g., show a SnackBar)

@@ -8,6 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.cs407.lazynotes.data.network.RetrofitClient
+import com.cs407.lazynotes.data.repository.FirefliesRepository
+import com.cs407.lazynotes.data.storage.FirebaseStorageServiceImpl
 import com.cs407.lazynotes.recording.RecordingRoute
 import com.cs407.lazynotes.ui.screens.FolderSelectScreen
 import com.cs407.lazynotes.ui.screens.HomeScreen
@@ -15,7 +18,6 @@ import com.cs407.lazynotes.ui.screens.NewFolderNotesScreen
 import com.cs407.lazynotes.ui.screens.NewFolderScreen
 import com.cs407.lazynotes.ui.screens.NewNoteScreen
 import com.cs407.lazynotes.ui.screens.NoteScreen
-import com.cs407.lazynotes.ui.screens.RecordingScreen
 import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
 import com.cs407.lazynotes.ui.screens.uploadFileBrowse
@@ -37,6 +39,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
+    val firefliesService = RetrofitClient.firefliesService
+    val storageService = FirebaseStorageServiceImpl()
+    val firefliesRepository = FirefliesRepository(firefliesService, storageService)
 
     NavHost (
         navController = navController,
@@ -103,7 +109,8 @@ fun AppNavigation() {
                     navController.navigate("folderSelect") {
                         popUpTo("record") { inclusive = true }
                     }
-                }
+                },
+                repository = firefliesRepository
             )
         }
 
