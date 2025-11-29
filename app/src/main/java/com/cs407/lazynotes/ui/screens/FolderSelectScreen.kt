@@ -1,133 +1,132 @@
 package com.cs407.lazynotes.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.cs407.lazynotes.R
+import com.cs407.lazynotes.ui.theme.MainBackground
+import com.cs407.lazynotes.ui.theme.TopBar
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FolderSelectScreen() {
+fun FolderSelectScreen(
+    navController: NavController,
+    onNavigateToHome: () -> Unit,
+    onNavigateToNewFolder: () -> Unit
+) {
+    val folderNames = remember { mutableStateListOf<String>() }
 
-    val folderNames = remember{ mutableStateListOf<String>() }
-
-    // Main container that houses all elements
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .background(Color.LightGray),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        // Top row that contains the title and button to close the menu
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.LightGray)
-                .padding(10.dp, 25.dp, 10.dp, 15.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-
-                // create title
-                Text(
-                    text = stringResource(id = R.string.select_folder),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                )
-
-                // Button to exit menu
-                Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close Page",
-                        tint = Color.Black
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.select_folder),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-
-            }
-        }
-
-        // New folder button gives user the option to create a new folder to put the notes in
-        OutlinedButton(
-            onClick = {},
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.DarkGray,
-            ),
-            shape = RectangleShape,
-            border = BorderStroke(2.dp, Color.Gray),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.new_folder)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onNavigateToHome() }) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Home"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = TopBar
+                )
             )
         }
-
-        // Lazy column that stores the rest of the current folders
-        LazyColumn(
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(paddingValues)
+                .background(MainBackground)
+                .padding(16.dp)
         ) {
+            // New folder button
+            SelectionCard(
+                title = stringResource(id = R.string.new_folder),
+                onClick = { onNavigateToNewFolder() }
+            )
 
-            items(folderNames) { name ->
-                OutlinedButton(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.DarkGray,
-                    ),
-                    shape = RectangleShape,
-                    border = BorderStroke(2.dp, Color.Gray),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                ) {
-                    Text(
-                        text = name
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Lazy column that stores the rest of the current folders
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(folderNames) { name ->
+                    FolderCard(
+                        folderName = name,
+                        onClick = { /* Handle folder selection */ }
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
-
         }
+    }
+}
+
+@Composable
+fun FolderCard(
+    folderName: String,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        color = Color.LightGray,
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Text(
+            text = folderName,
+            modifier = Modifier.padding(16.dp),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
