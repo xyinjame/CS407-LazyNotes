@@ -81,7 +81,7 @@ fun AppNavigation() {
 
     NavHost (
         navController = navController,
-        startDestination = "flashcards"
+        startDestination = "home"
     ) {
         // ... (other composables remain the same)
         composable("home") { HomeScreen(onNavigateToSettings = {navController.navigate("settings")}, onNavigateToNew = {navController.navigate("newFolderNotes")}, onNavigateToViewNotes = {navController.navigate("viewNote")}) }
