@@ -59,6 +59,7 @@ fun RecordingScreen(
     navController: NavController,
     onNavigateToHome: () -> Unit,
     onNavigateToFolderSelect: () -> Unit,
+    isProcessing: Boolean,
     onStartRecording: () -> Unit = {},
     onPause: () -> Unit = {},
     onResume: () -> Unit = {}
