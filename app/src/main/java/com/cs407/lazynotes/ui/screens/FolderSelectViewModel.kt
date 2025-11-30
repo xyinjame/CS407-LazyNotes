@@ -57,7 +57,8 @@ class FolderSelectViewModel(private val repository: FirefliesRepository) : ViewM
 
             val maxSummaryAttempts = 5 // Try to get the summary 5 times
             var attempt = 0
-            val totalMaxAttempts = 15 // Shorten total timeout to 5 minutes (15 * 20s = 300s)
+            // Total timeout is now ~11 minutes (15 * 45s)
+            val totalMaxAttempts = 15
 
             while (attempt < totalMaxAttempts) {
                 when (val result = repository.getTranscript(clientRefId)) {
@@ -69,7 +70,7 @@ class FolderSelectViewModel(private val repository: FirefliesRepository) : ViewM
                             return@launch // Got summary, success!
                         }
 
-                        // After 5 attempts, or if summary is still null, check for sentences
+                        // After 5 attempts, or if summary is still null, check for sentences as a fallback
                         if (attempt >= maxSummaryAttempts) {
                             val rawText = transcript.sentences?.mapNotNull { it.raw_text }?.joinToString(" ")
                             if (!rawText.isNullOrBlank()) {
@@ -96,7 +97,8 @@ class FolderSelectViewModel(private val repository: FirefliesRepository) : ViewM
                         }
                     }
                 }
-                delay(20_000) // Wait 20 seconds before next poll to respect rate limits
+                // Wait 45 seconds before next poll to respect rate limits and server suggestions
+                delay(45_000)
                 attempt++
             }
             _uiState.update { PollingUiState.Timeout } // Loop finished, timeout.
