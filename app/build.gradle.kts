@@ -18,6 +18,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        // Fireflies API Key is read from project properties or defaults to a local key
         val secretKey = project.findProperty("firefliesApiKey") as String? ?: "DEFAULT_KEY_FOR_LOCAL"
 
         buildConfigField("String", "FIREFLIES_API_KEY", "\"$secretKey\"")
@@ -68,24 +69,18 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Retrofit
+    // Retrofit (HTTP Client)
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-
-    // OkHttp
+    // Retrofit Gson Converter
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    
+    // OkHttp (Underlying HTTP Library)
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
-    // Gson
+    // Gson (JSON Serialization/Deserialization)
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // Retrofit Gson Converter
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-
-    // Coroutines for Play Services
+    // Coroutines for Firebase/Play Services interoperability
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
 }
-
-
-
-
-
