@@ -46,16 +46,16 @@ import androidx.compose.ui.unit.sp
 import com.cs407.lazynotes.ui.theme.MainBackground
 import com.cs407.lazynotes.ui.theme.TopBar
 
-// Data classes for our app
-data class Note(
+// Data classes for our app's UI structure
+data class NoteItemData( // Renamed to avoid conflict with ViewModel's Note
     val id: String,
     val title: String
 )
 
-data class Folder(
+data class FolderData( // Renamed to avoid conflict with other data classes
     val id: String,
     val name: String,
-    val notes: List<Note>
+    val notes: List<NoteItemData>
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,22 +65,22 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToNew: () -> Unit
 ) {
-    // Sample data - this will be replaced with real data later
+    // Sample data - this will be replaced with real data from a ViewModel later
     val folders = remember {
         listOf(
-            Folder(
+            FolderData(
                 id = "1",
                 name = "CS Notes",
                 notes = listOf(
-                    Note("1", "CS 407 Lecture 1 Notes"),
-                    Note("2", "CS 407 Lecture 2 Notes")
+                    NoteItemData("1", "CS 407 Lecture 1 Notes"),
+                    NoteItemData("2", "CS 407 Lecture 2 Notes")
                 )
             ),
-            Folder(
+            FolderData(
                 id = "2",
                 name = "MATH Notes",
                 notes = listOf(
-                    Note("3", "MATH Lecture 2 Notes")
+                    NoteItemData("3", "MATH Lecture 2 Notes")
                 )
             )
         )
@@ -88,6 +88,15 @@ fun HomeScreen(
 
     var searchQuery by remember { mutableStateOf("") }
     var expandedFolders by remember { mutableStateOf(setOf<String>()) }
+
+    val filteredFolders = if (searchQuery.isBlank()) {
+        folders
+    } else {
+        folders.filter { folder ->
+            folder.name.contains(searchQuery, ignoreCase = true) ||
+                    folder.notes.any { note -> note.title.contains(searchQuery, ignoreCase = true) }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -145,7 +154,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                items(folders) { folder ->
+                items(filteredFolders) { folder ->
                     FolderItem(
                         folder = folder,
                         isExpanded = expandedFolders.contains(folder.id),
@@ -199,7 +208,7 @@ fun SearchBar(
 
 @Composable
 fun FolderItem(
-    folder: Folder,
+    folder: FolderData,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     onNoteClick: () -> Unit
@@ -257,7 +266,7 @@ fun FolderItem(
 
 @Composable
 fun NoteItem(
-    note: Note,
+    note: NoteItemData,
     onClick: () -> Unit
     ) {
     Surface(

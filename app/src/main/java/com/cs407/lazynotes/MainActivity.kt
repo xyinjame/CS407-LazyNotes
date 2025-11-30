@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,6 +16,7 @@ import com.cs407.lazynotes.data.repository.FirefliesRepository
 import com.cs407.lazynotes.data.storage.FirebaseStorageServiceImpl
 import com.cs407.lazynotes.recording.RecordingRoute
 import com.cs407.lazynotes.ui.screens.FolderSelectScreen
+import com.cs407.lazynotes.ui.screens.FolderSelectViewModel
 import com.cs407.lazynotes.ui.screens.HomeScreen
 import com.cs407.lazynotes.ui.screens.NewFolderNotesScreen
 import com.cs407.lazynotes.ui.screens.NewFolderScreen
@@ -26,6 +28,10 @@ import com.cs407.lazynotes.ui.screens.uploadFileBrowse
 import com.cs407.lazynotes.ui.screens.uploadFileScreen
 import com.cs407.lazynotes.ui.screens.FlashcardScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 
 // Route constants
 private const val FOLDER_SELECT_ROUTE = "folderSelect"
@@ -35,6 +41,22 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this)
+        val firebaseAppCheck = FirebaseAppCheck.getInstance()
+
+        // Install the debug provider in debug builds and the Play Integrity provider in release builds.
+        if (BuildConfig.DEBUG) {
+            firebaseAppCheck.installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance()
+            )
+        } else {
+            firebaseAppCheck.installAppCheckProviderFactory(
+                PlayIntegrityAppCheckProviderFactory.getInstance()
+            )
+        }
+
         setContent {
             LazyNotesTheme {
                 AppNavigation()
@@ -47,9 +69,15 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
 
+    // Setup singleton dependencies
     val firefliesService = RetrofitClient.firefliesService
     val storageService = FirebaseStorageServiceImpl()
     val firefliesRepository = FirefliesRepository(firefliesService, storageService)
+
+    // Create the ViewModel instance that will be shared across the navigation graph
+    val folderSelectViewModel: FolderSelectViewModel = viewModel(
+        factory = FolderSelectViewModel.provideFactory(firefliesRepository)
+    )
 
     NavHost (
         navController = navController,
@@ -65,15 +93,12 @@ fun AppNavigation() {
         composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
         composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
         composable("uploadFileBrowse") { uploadFileBrowse(navController = navController, onNavigateToHome = {navController.navigate("home")}) }
-        composable("home") { HomeScreen(onNavigateToSettings = {navController.navigate("settings")}, onNavigateToNew = {navController.navigate("newFolderNotes")}, onNavigateToViewNotes = {navController.navigate("viewNote")}) }
 
         composable("record") {
             RecordingRoute(
                 navController = navController,
                 onNavigateToHome = { navController.navigate("home") },
                 onNavigateToFolderSelect = { clientRefId ->
-                    // This navigation logic is correct.
-                    // It constructs a route like "folderSelect?clientRefId=someId"
                     val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId"
                     navController.navigate(route) {
                         popUpTo("record") { inclusive = true }
@@ -94,21 +119,19 @@ fun AppNavigation() {
         }
 
         composable(
-            // Define the route with the optional parameter syntax
-            route = "folderSelect?clientRefId={clientRefId}",
-            // Define the argument and its type
-            arguments = listOf(navArgument("clientRefId") {
+            route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG={$CLIENT_REF_ID_ARG}",
+            arguments = listOf(navArgument(CLIENT_REF_ID_ARG) {
                 type = NavType.StringType
                 nullable = true
             })
         ) { backStackEntry ->
-            // Retrieve the argument from the backStackEntry
-            val clientRefId = backStackEntry.arguments?.getString("clientRefId")
+            val clientRefId = backStackEntry.arguments?.getString(CLIENT_REF_ID_ARG)
             FolderSelectScreen(
                 navController = navController,
                 onNavigateToHome = { navController.navigate("home") },
                 onNavigateToNewFolder = { navController.navigate("newFolder") },
-                clientRefId = clientRefId // Pass it to your screen
+                clientRefId = clientRefId,
+                viewModel = folderSelectViewModel // Pass the ViewModel to the screen
             )
         }
     }
