@@ -91,19 +91,32 @@ fun AppNavigation() {
         composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
         composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
         composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
-        composable("uploadFileBrowse") { uploadFileBrowse(navController = navController, onNavigateToHome = {navController.navigate("home")}) }
+
+        composable("uploadFileBrowse") {
+            uploadFileBrowse(
+                navController = navController,
+                onNavigateToHome = { navController.navigate("home") },
+                repository = firefliesRepository,
+                onNavigateToFolderSelect = { clientRefId ->
+                    val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId"
+                    navController.navigate(route) {
+                        popUpTo("uploadFileBrowse") { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable("record") {
             RecordingRoute(
                 navController = navController,
                 onNavigateToHome = { navController.navigate("home") },
+                repository = firefliesRepository,
                 onNavigateToFolderSelect = { clientRefId ->
                     val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId"
                     navController.navigate(route) {
                         popUpTo("record") { inclusive = true }
                     }
-                },
-                repository = firefliesRepository
+                }
             )
         }
 
