@@ -1,6 +1,5 @@
 package com.cs407.lazynotes.data.network
 
-import com.cs407.lazynotes.data.network.models.GraphQLRequest
 import com.cs407.lazynotes.data.network.models.GraphQLResponse
 import retrofit2.http.Body
 import retrofit2.http.Header
@@ -13,6 +12,6 @@ interface FirefliesService {
     @POST("graphql")
     suspend fun executeGraphQL(
         @Header("Authorization") authorization: String,
-        @Body request: GraphQLRequest
+        @Body request: Map<String, @JvmSuppressWildcards Any>
     ): GraphQLResponse
 }

@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// Manually load properties from local.properties file.
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,9 +27,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Fireflies API Key is read from project properties or defaults to a local key
-        val secretKey = project.findProperty("firefliesApiKey") as String? ?: "DEFAULT_KEY_FOR_LOCAL"
-
+        // Read the secret key from the loaded local.properties file.
+        val secretKey = localProperties.getProperty("firefliesApiKey") ?: "DEFAULT_KEY_FOR_LOCAL"
         buildConfigField("String", "FIREFLIES_API_KEY", "\"$secretKey\"")
     }
 
@@ -69,18 +77,29 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Retrofit (HTTP Client)
+    // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    // Retrofit Gson Converter
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    
-    // OkHttp (Underlying HTTP Library)
+
+    // OkHttp
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
-    // Gson (JSON Serialization/Deserialization)
+    // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // Coroutines for Firebase/Play Services interoperability
+    // Retrofit Gson Converter
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // Coroutines for Play Services
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+
+    // Firebase App Check
+    implementation("com.google.firebase:firebase-appcheck-playintegrity:18.0.0")
+    // App Check debug provider for emulators and non-certified devices
+    debugImplementation("com.google.firebase:firebase-appcheck-debug:18.0.0")
 }
+
+
+
+
+
