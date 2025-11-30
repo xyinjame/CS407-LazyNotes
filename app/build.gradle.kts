@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// Manually load properties from local.properties file.
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,8 +27,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val secretKey = project.findProperty("firefliesApiKey") as String? ?: "DEFAULT_KEY_FOR_LOCAL"
-
+        // Read the secret key from the loaded local.properties file.
+        val secretKey = localProperties.getProperty("firefliesApiKey") ?: "DEFAULT_KEY_FOR_LOCAL"
         buildConfigField("String", "FIREFLIES_API_KEY", "\"$secretKey\"")
     }
 
@@ -83,6 +92,11 @@ dependencies {
 
     // Coroutines for Play Services
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+
+    // Firebase App Check
+    implementation("com.google.firebase:firebase-appcheck-playintegrity:18.0.0")
+    // App Check debug provider for emulators and non-certified devices
+    debugImplementation("com.google.firebase:firebase-appcheck-debug:18.0.0")
 }
 
 
