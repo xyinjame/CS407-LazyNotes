@@ -25,7 +25,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -43,7 +42,8 @@ import com.cs407.lazynotes.ui.theme.TopBar
 fun FolderSelectScreen(
     navController: NavController,
     onNavigateToHome: () -> Unit,
-    onNavigateToNewFolder: () -> Unit
+    onNavigateToNewFolder: () -> Unit,
+    clientRefId: String?
 ) {
     val folderNames = remember { mutableStateListOf<String>() }
 
