@@ -2,6 +2,8 @@ package com.cs407.lazynotes.data.repository
 
 import com.cs407.lazynotes.BuildConfig
 import com.cs407.lazynotes.data.network.FirefliesService
+import com.cs407.lazynotes.data.network.models.GraphQLError
+import com.cs407.lazynotes.data.network.models.GraphQLResponse
 import com.cs407.lazynotes.data.storage.StorageService
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -23,7 +25,6 @@ data class TranscriptSummary(
 private data class UploadAudioResponse(val uploadAudio: UploadAudioPayload?)
 private data class UploadAudioPayload(val success: Boolean, val message: String?)
 
-// Revert to the list response data class
 private data class GetTranscriptsResponseData(val transcripts: List<Transcript>?)
 
 data class Transcript(val id: String?, val title: String?, val summary: TranscriptSummary?, val sentences: List<Sentence>?)
@@ -62,7 +63,7 @@ class FirefliesRepository(
             val response = apiService.executeGraphQL(authHeader, requestBody)
 
             if (response.data != null && response.errors.isNullOrEmpty()) {
-                val uploadResponse = gson.fromJson(response.data, UploadAudioResponse::class.java)
+                val uploadResponse = gson.fromJson(response.data.toString(), UploadAudioResponse::class.java)
                 if (uploadResponse.uploadAudio?.success == true) {
                     NetworkResult.Success(clientRefId)
                 } else {
@@ -82,7 +83,6 @@ class FirefliesRepository(
     suspend fun getTranscript(clientRefId: String): NetworkResult<Transcript> {
         return try {
             val authHeader = "Bearer ${BuildConfig.FIREFLIES_API_KEY}"
-            // Revert to the plural 'transcripts(mine: true)' query
             val query = """
                 query getMyTranscripts {
                   transcripts(mine: true) {
@@ -94,22 +94,18 @@ class FirefliesRepository(
                 }
             """.trimIndent()
 
-            // This query has no variables
             val requestBody = mapOf("query" to query)
             val response = apiService.executeGraphQL(authHeader, requestBody)
 
             if (response.data != null && response.errors.isNullOrEmpty()) {
-                // Parse the list response
-                val responseData = gson.fromJson(response.data, GetTranscriptsResponseData::class.java)
+                val responseData = gson.fromJson(response.data.toString(), GetTranscriptsResponseData::class.java)
 
-                // Find our specific transcript in the list by title
                 val targetTitle = clientRefId.substringBeforeLast('.')
                 val ourTranscript = responseData?.transcripts?.find { it.title == targetTitle }
 
                 if (ourTranscript != null) {
                     NetworkResult.Success(ourTranscript)
                 } else {
-                    // This means our transcript hasn't appeared in the list yet.
                     NetworkResult.Failure(null, "Transcription not yet in the list.")
                 }
             } else {
