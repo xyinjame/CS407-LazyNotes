@@ -45,6 +45,8 @@ android {
     }
 }
 
+// app/build.gradle.kts
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -68,26 +70,21 @@ dependencies {
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    // Gson Converter
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
     // OkHttp
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
-    // OkHttp
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
-    // Add the Gson library implementation
+    // Gson
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // Also add the Retrofit Gson Converter
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // Add the Gson library implementation
-    implementation("com.google.code.gson:gson:2.10.1")
-    // Also add the Retrofit Gson Converter if you're using Retrofit (recommended for API clients)
+    // Retrofit Gson Converter
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    implementation ("com.google.firebase:firebase-storage")
+    // Coroutines for Play Services
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
 }
+
 
 
 
