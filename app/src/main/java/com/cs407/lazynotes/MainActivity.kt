@@ -81,7 +81,7 @@ fun AppNavigation() {
 
     NavHost (
         navController = navController,
-        startDestination = "home"
+        startDestination = "flashcards"
     ) {
         // ... (other composables remain the same)
         composable("home") { HomeScreen(onNavigateToSettings = {navController.navigate("settings")}, onNavigateToNew = {navController.navigate("newFolderNotes")}, onNavigateToViewNotes = {navController.navigate("viewNote")}) }
@@ -115,7 +115,10 @@ fun AppNavigation() {
         We also compared it to Bellman-Ford and talked about negative edges.
     """.trimIndent()
 
-            FlashcardScreen(transcript = fakeTranscript)
+            FlashcardScreen(
+                transcript = fakeTranscript,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(
