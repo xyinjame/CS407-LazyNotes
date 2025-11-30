@@ -24,6 +24,7 @@ import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
 import com.cs407.lazynotes.ui.screens.uploadFileBrowse
 import com.cs407.lazynotes.ui.screens.uploadFileScreen
+import com.cs407.lazynotes.ui.screens.FlashcardScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 
 // Route constants
@@ -80,6 +81,16 @@ fun AppNavigation() {
                 },
                 repository = firefliesRepository
             )
+        }
+
+        composable("flashcards") {
+            val fakeTranscript = """
+        Today we discussed Dijkstra's algorithm, shortest path in graphs,
+        and how priority queues are used to always pick the next closest node.
+        We also compared it to Bellman-Ford and talked about negative edges.
+    """.trimIndent()
+
+            FlashcardScreen(transcript = fakeTranscript)
         }
 
         composable(

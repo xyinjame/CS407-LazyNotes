@@ -1,3 +1,11 @@
+import java.util.Properties
+
+val localProps = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProps.load(it) }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -22,6 +30,9 @@ android {
         val secretKey = project.findProperty("firefliesApiKey") as String? ?: "DEFAULT_KEY_FOR_LOCAL"
 
         buildConfigField("String", "FIREFLIES_API_KEY", "\"$secretKey\"")
+
+        val perplexityKey = localProps.getProperty("PERPLEXITY_API_KEY") ?: ""
+        buildConfigField("String", "PERPLEXITY_API_KEY", "\"$perplexityKey\"")
     }
 
     buildTypes {
