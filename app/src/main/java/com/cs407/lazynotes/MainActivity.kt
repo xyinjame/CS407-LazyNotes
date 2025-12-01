@@ -128,9 +128,17 @@ fun AppNavigation() {
 
         composable("$NOTE_DETAIL_ROUTE/{$NOTE_ID_ARG}") { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString(NOTE_ID_ARG)
+
             NoteDetailScreen(
                 noteId = noteId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onGenerateFlashcards = { transcript ->
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("flashcardTranscript", transcript)
+
+                    navController.navigate("flashcards")
+                }
             )
         }
 
@@ -169,14 +177,14 @@ fun AppNavigation() {
 
         // CRITICAL: This destination handles the final step of note creation, receiving transcription data.
         composable("flashcards") {
-            val fakeTranscript = """
-        Today we discussed Dijkstra's algorithm, shortest path in graphs,
-        and how priority queues are used to always pick the next closest node.
-        We also compared it to Bellman-Ford and talked about negative edges.
-    """.trimIndent()
+            val transcript = navController
+                .previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<String>("flashcardTranscript")
+                ?: ""
 
             FlashcardScreen(
-                transcript = fakeTranscript,
+                transcript = transcript,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,7 +36,8 @@ import com.cs407.lazynotes.data.NoteRepository
 @Composable
 fun NoteDetailScreen(
     noteId: String?,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onGenerateFlashcards: (String) -> Unit
 ) {
     // State to hold the note object fetched from the repository.
     var note by remember { mutableStateOf<com.cs407.lazynotes.data.Note?>(null) }
@@ -87,6 +89,19 @@ fun NoteDetailScreen(
                 Text("Audio File", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(noteDetail.audioUri ?: "No audio file linked.", style = MaterialTheme.typography.bodySmall)
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Button to generate flashcards
+                val transcriptText = noteDetail.transcript ?: noteDetail.summary
+
+                Button(
+                    onClick = {
+                        transcriptText?.let { onGenerateFlashcards(it) }
+                    },
+                    enabled = !transcriptText.isNullOrBlank()
+                ) {
+                    Text("Generate Flashcards")
+                }
             }
         }
     }
