@@ -55,33 +55,40 @@ fun RecordingRoute(
         onNavigateToFolderSelect = onNavigateToFolderSelect@{
             if (isProcessing) return@onNavigateToFolderSelect
 
-            val audioFile = controller.stop()
+            isProcessing = true // Immediately update UI to processing state
 
-            if (audioFile != null) {
-                isProcessing = true
+            scope.launch(Dispatchers.IO) { // Move all work to a background thread
+                val audioFile = controller.stop()
 
-                scope.launch {
+                if (audioFile != null) {
                     val noteTitle = audioFile.nameWithoutExtension
 
-                    // Save the recording to public storage first
+                    // Save the recording to public storage
                     saveRecordingToPublicDirectory(context, audioFile)
 
-                    // Then, proceed with uploading for transcription
-                    when (val result = repository.processRecordingForTranscription(audioFile, noteTitle)) {
-                        is NetworkResult.Success -> {
-                            val clientRefId = result.data
-                            isProcessing = false
-                            onNavigateToFolderSelect(clientRefId)
+                    // Proceed with uploading for transcription
+                    val result = repository.processRecordingForTranscription(audioFile, noteTitle)
+
+                    // Switch back to the main thread to update UI and navigate
+                    withContext(Dispatchers.Main) {
+                        when (result) {
+                            is NetworkResult.Success -> {
+                                val clientRefId = result.data
+                                onNavigateToFolderSelect(clientRefId)
+                            }
+                            is NetworkResult.Failure -> {
+                                println("ERROR: Failed to start transcription job. Message: ${result.message}")
+                                onNavigateToFolderSelect(null)
+                            }
                         }
-                        is NetworkResult.Failure -> {
-                            println("ERROR: Failed to start transcription job. Message: ${result.message}")
-                            isProcessing = false
-                            onNavigateToFolderSelect(null)
-                        }
+                        isProcessing = false // Set processing to false after navigation
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        isProcessing = false
+                        onNavigateToFolderSelect(null)
                     }
                 }
-            } else {
-                onNavigateToFolderSelect(null)
             }
         },
         onStartRecording = {
@@ -97,46 +104,43 @@ fun RecordingRoute(
  * This makes the recording visible in other apps like file managers or music players.
  */
 private suspend fun saveRecordingToPublicDirectory(context: Context, sourceFile: File) {
-    withContext(Dispatchers.IO) {
-        val resolver = context.contentResolver
-        val audioCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        } else {
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        }
+    // This function is already running on Dispatchers.IO because of the calling context
+    val resolver = context.contentResolver
+    val audioCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+    } else {
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+    }
 
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Audio.Media.DISPLAY_NAME, sourceFile.name)
-            put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp4") // Assuming m4a format
+    val contentValues = ContentValues().apply {
+        put(MediaStore.Audio.Media.DISPLAY_NAME, sourceFile.name)
+        put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp4") // Assuming m4a format
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/LazyNotesRecordings")
+            put(MediaStore.Audio.Media.IS_PENDING, 1)
+        }
+    }
+
+    val uri = resolver.insert(audioCollection, contentValues)
+    if (uri != null) {
+        try {
+            resolver.openOutputStream(uri)?.use { outputStream ->
+                sourceFile.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/LazyNotesRecordings")
-                put(MediaStore.Audio.Media.IS_PENDING, 1)
+                contentValues.clear()
+                contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0)
+                resolver.update(uri, contentValues, null, null)
             }
+            println("SUCCESS: Recording saved to public directory at $uri")
+        } catch (e: Exception) {
+            println("ERROR: Failed to save recording to public directory. ${e.message}")
+            resolver.delete(uri, null, null)
         }
-
-        val uri = resolver.insert(audioCollection, contentValues)
-        if (uri != null) {
-            try {
-                resolver.openOutputStream(uri)?.use { outputStream ->
-                    sourceFile.inputStream().use { inputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    contentValues.clear()
-                    contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0)
-                    resolver.update(uri, contentValues, null, null)
-                }
-                println("SUCCESS: Recording saved to public directory at $uri")
-            } catch (e: Exception) {
-                println("ERROR: Failed to save recording to public directory. ${e.message}")
-                // If saving fails, we should still proceed with the upload, so we just log the error.
-                // To be robust, one might delete the failed entry from MediaStore.
-                resolver.delete(uri, null, null)
-            }
-        } else {
-            println("ERROR: Could not create MediaStore entry for recording.")
-        }
+    } else {
+        println("ERROR: Could not create MediaStore entry for recording.")
     }
 }
