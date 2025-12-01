@@ -44,18 +44,19 @@ fun FolderSelectScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToNewFolder: () -> Unit,
     clientRefId: String?,
+    audioUri: String?,
     viewModel: FolderSelectViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val vmNoteTitle by viewModel.noteTitle.collectAsState()
     var noteTitle by remember { mutableStateOf("") }
 
-    // Observe the real folder list from the ViewModel
     val folders = viewModel.folders
 
-    LaunchedEffect(clientRefId) {
+    // The effect now triggers polling and passes all necessary data to the ViewModel
+    LaunchedEffect(clientRefId, audioUri) {
         if (clientRefId != null) {
-            viewModel.startPolling(clientRefId)
+            viewModel.startPolling(clientRefId, audioUri)
         }
     }
 
@@ -91,7 +92,6 @@ fun FolderSelectScreen(
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
 
-                            // Title TextField is now connected to a state that is properly managed
                             TextField(
                                 value = noteTitle,
                                 onValueChange = {
@@ -107,7 +107,6 @@ fun FolderSelectScreen(
                         
                         HorizontalDivider()
 
-                        // Folder List now displays the real folders
                         LazyColumn(modifier = Modifier.weight(1f)) {
                             items(folders) { folder ->
                                 ListItem(
@@ -122,7 +121,6 @@ fun FolderSelectScreen(
                         
                         HorizontalDivider()
 
-                        // Button to create a new folder
                         Button(
                             onClick = onNavigateToNewFolder,
                             modifier = Modifier.fillMaxWidth().padding(16.dp)

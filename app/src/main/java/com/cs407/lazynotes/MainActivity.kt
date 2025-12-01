@@ -23,7 +23,8 @@ import com.cs407.lazynotes.ui.screens.HomeScreen
 import com.cs407.lazynotes.ui.screens.NewFolderNotesScreen
 import com.cs407.lazynotes.ui.screens.NewFolderScreen
 import com.cs407.lazynotes.ui.screens.NewNoteScreen
-import com.cs407.lazynotes.ui.screens.NoteScreen
+import com.cs407.lazynotes.ui.screens.NoteDetailScreen
+import com.cs407.lazynotes.ui.screens.NoteListScreen
 import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
 import com.cs407.lazynotes.ui.screens.uploadFileBrowse
@@ -34,30 +35,27 @@ import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 
-// Route constants
+// --- Route Constants --- We define these to avoid typos and for easy reference
 private const val FOLDER_SELECT_ROUTE = "folderSelect"
+private const val NOTE_LIST_ROUTE = "noteList"
+private const val NOTE_DETAIL_ROUTE = "noteDetail"
+
 private const val CLIENT_REF_ID_ARG = "clientRefId"
-private const val VIEW_NOTE_ROUTE = "viewNote"
+private const val AUDIO_URI_ARG = "audioUri"
 private const val FOLDER_NAME_ARG = "folderName"
+private const val NOTE_ID_ARG = "noteId"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Initialize Firebase
         FirebaseApp.initializeApp(this)
         val firebaseAppCheck = FirebaseAppCheck.getInstance()
-
-        // Install the debug provider in debug builds and the Play Integrity provider in release builds.
         if (BuildConfig.DEBUG) {
-            firebaseAppCheck.installAppCheckProviderFactory(
-                DebugAppCheckProviderFactory.getInstance()
-            )
+            firebaseAppCheck.installAppCheckProviderFactory(DebugAppCheckProviderFactory.getInstance())
         } else {
-            firebaseAppCheck.installAppCheckProviderFactory(
-                PlayIntegrityAppCheckProviderFactory.getInstance()
-            )
+            firebaseAppCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
         }
 
         setContent {
@@ -72,90 +70,105 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    // Setup singleton dependencies
     val firefliesService = RetrofitClient.firefliesService
     val storageService = FirebaseStorageServiceImpl()
     val firefliesRepository = FirefliesRepository(firefliesService, storageService)
 
-    // Create the ViewModel instance that will be shared across the navigation graph
     val folderSelectViewModel: FolderSelectViewModel = viewModel(
         factory = FolderSelectViewModel.provideFactory(
             firefliesRepo = firefliesRepository,
-            folderRepo = FolderRepository, // Pass the singleton instance
-            noteRepo = NoteRepository      // Pass the singleton instance
+            folderRepo = FolderRepository,
+            noteRepo = NoteRepository
         )
     )
 
-    NavHost (
+    NavHost(
         navController = navController,
         startDestination = "home"
     ) {
+        // --- Main Screens ---
         composable("home") {
             HomeScreen(
                 onNavigateToSettings = { navController.navigate("settings") },
                 onNavigateToNew = { navController.navigate("newFolderNotes") },
                 onNavigateToViewNotes = { folderName ->
-                    navController.navigate("$VIEW_NOTE_ROUTE/$folderName")
+                    navController.navigate("$NOTE_LIST_ROUTE/$folderName")
                 }
             )
         }
-        composable("settings") { SettingsScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToPreferences = {navController.navigate("preferences")}) }
-        composable("newFolderNotes") { NewFolderNotesScreen(navController = navController, onNavigateToNewFolder = {navController.navigate("newFolder")}, onNavigateToNewNote = {navController.navigate("newNote")}) }
-        composable(
-            route = "$VIEW_NOTE_ROUTE/{$FOLDER_NAME_ARG}",
-            arguments = listOf(navArgument(FOLDER_NAME_ARG) { type = NavType.StringType })
-        ) { backStackEntry ->
-            val folderName = backStackEntry.arguments?.getString(FOLDER_NAME_ARG)
-            NoteScreen(navController = navController, folderName = folderName)
-        }
-        composable("newFolder") { NewFolderScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}) }
-        composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
-        composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
-        composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
 
-        composable("uploadFileBrowse") {
-            uploadFileBrowse(
-                navController = navController,
-                onNavigateToHome = { navController.navigate("home") },
-                repository = firefliesRepository,
-                onNavigateToFolderSelect = { clientRefId ->
-                    val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId"
-                    navController.navigate(route) {
-                        popUpTo("uploadFileBrowse") { inclusive = true }
-                    }
-                }
+        composable("$NOTE_LIST_ROUTE/{$FOLDER_NAME_ARG}") { backStackEntry ->
+            val folderName = backStackEntry.arguments?.getString(FOLDER_NAME_ARG)
+            NoteListScreen(
+                folderName = folderName,
+                onNoteClick = { noteId ->
+                    navController.navigate("$NOTE_DETAIL_ROUTE/$noteId")
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
+
+        composable("$NOTE_DETAIL_ROUTE/{$NOTE_ID_ARG}") { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString(NOTE_ID_ARG)
+            NoteDetailScreen(
+                noteId = noteId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        
+        // --- Creation and Selection Flow ---
+        composable("newFolderNotes") { NewFolderNotesScreen(navController = navController, onNavigateToNewFolder = {navController.navigate("newFolder")}, onNavigateToNewNote = {navController.navigate("newNote")}) }
+        // Updated composable for NewFolderScreen
+        composable("newFolder") { NewFolderScreen(navController = navController) }
+        composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
 
         composable("record") {
             RecordingRoute(
                 navController = navController,
-                onNavigateToHome = { navController.navigate("home") },
+                onNavigateToHome = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 repository = firefliesRepository,
-                onNavigateToFolderSelect = { clientRefId ->
-                    val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId"
-                    navController.navigate(route) {
-                        popUpTo("record") { inclusive = true }
-                    }
+                onNavigateToFolderSelect = { clientRefId, audioUri ->
+                    val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId&$AUDIO_URI_ARG=$audioUri"
+                    navController.navigate(route) { popUpTo("record") { inclusive = true } }
+                }
+            )
+        }
+
+        composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
+        
+        composable("uploadFileBrowse") {
+            uploadFileBrowse(
+                navController = navController,
+                onNavigateToHome = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
+                repository = firefliesRepository,
+                onNavigateToFolderSelect = { clientRefId, audioUri ->
+                    val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId&$AUDIO_URI_ARG=$audioUri"
+                    navController.navigate(route) { popUpTo("uploadFileBrowse") { inclusive = true } }
                 }
             )
         }
 
         composable(
-            route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG={$CLIENT_REF_ID_ARG}",
-            arguments = listOf(navArgument(CLIENT_REF_ID_ARG) {
-                type = NavType.StringType
-                nullable = true
-            })
+            route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG={$CLIENT_REF_ID_ARG}&$AUDIO_URI_ARG={$AUDIO_URI_ARG}",
+            arguments = listOf(
+                navArgument(CLIENT_REF_ID_ARG) { type = NavType.StringType; nullable = true },
+                navArgument(AUDIO_URI_ARG) { type = NavType.StringType; nullable = true }
+            )
         ) { backStackEntry ->
             val clientRefId = backStackEntry.arguments?.getString(CLIENT_REF_ID_ARG)
+            val audioUri = backStackEntry.arguments?.getString(AUDIO_URI_ARG)
             FolderSelectScreen(
                 navController = navController,
-                onNavigateToHome = { navController.navigate("home") },
+                onNavigateToHome = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 onNavigateToNewFolder = { navController.navigate("newFolder") },
                 clientRefId = clientRefId,
-                viewModel = folderSelectViewModel // Pass the ViewModel to the screen
+                audioUri = audioUri, // Pass the audio URI
+                viewModel = folderSelectViewModel
             )
         }
+        
+        // --- Settings Flow ---
+        composable("settings") { SettingsScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToPreferences = {navController.navigate("preferences")}) }
+        composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
     }
 }

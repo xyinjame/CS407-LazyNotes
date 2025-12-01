@@ -31,8 +31,7 @@ import com.cs407.lazynotes.data.FolderRepository
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewFolderScreen(
-    navController: NavController,
-    onNavigateToHome: () -> Unit
+    navController: NavController
 ) {
     var folderName by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -67,7 +66,8 @@ fun NewFolderScreen(
                         val success = FolderRepository.addFolder(folderName)
                         if (success) {
                             Toast.makeText(context, "Folder '$folderName' created", Toast.LENGTH_SHORT).show()
-                            onNavigateToHome()
+                            // Simply navigate back to the previous screen
+                            navController.popBackStack()
                         } else {
                             Toast.makeText(context, "Folder already exists", Toast.LENGTH_SHORT).show()
                         }

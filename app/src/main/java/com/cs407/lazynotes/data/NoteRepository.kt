@@ -4,18 +4,19 @@ import androidx.compose.runtime.mutableStateListOf
 import java.util.UUID
 
 /**
- * A simple data class to represent a note.
+ * A rich data class representing a single note with all its content.
  */
 data class Note(
     val id: String = UUID.randomUUID().toString(),
     val title: String,
-    val content: String,
-    val folder: String // The name of the folder this note belongs to
+    val folderName: String, // The name of the folder this note belongs to
+    val summary: String?,
+    val transcript: String?,
+    val audioUri: String? // The URI of the locally saved audio file
 )
 
 /**
  * A singleton repository to manage notes throughout the app.
- * This ensures all parts of the app are working with the same set of notes.
  */
 object NoteRepository {
 
@@ -31,7 +32,7 @@ object NoteRepository {
      */
     fun addNote(note: Note) {
         _notes.add(note)
-        println("Note '${note.title}' added to repository. Total notes: ${_notes.size}")
+        println("Note '${note.title}' added to folder '${note.folderName}'. Total notes: ${_notes.size}")
     }
 
     /**
@@ -40,6 +41,15 @@ object NoteRepository {
      * @return A list of notes for the given folder.
      */
     fun getNotesForFolder(folderName: String): List<Note> {
-        return _notes.filter { it.folder.equals(folderName, ignoreCase = true) }
+        return _notes.filter { it.folderName.equals(folderName, ignoreCase = true) }
+    }
+
+    /**
+     * Finds a single note by its unique ID.
+     * @param noteId The ID of the note to find.
+     * @return The Note object if found, otherwise null.
+     */
+    fun getNoteById(noteId: String): Note? {
+        return _notes.find { it.id == noteId }
     }
 }
