@@ -31,15 +31,16 @@ import com.cs407.lazynotes.flashcards.FlashcardUiState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FlashcardScreen(
+    noteId: String,
     transcript: String,
     onNavigateBack: () -> Unit,
     viewModel: FlashcardViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(transcript) {
+    LaunchedEffect(noteId, transcript) {
         if (!state.isLoading && state.cards.isEmpty() && state.error == null) {
-            viewModel.loadFlashcards(transcript)
+            viewModel.loadFlashcards(noteId, transcript)
         }
     }
 

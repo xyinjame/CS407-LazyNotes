@@ -133,11 +133,17 @@ fun AppNavigation() {
                 noteId = noteId,
                 onNavigateBack = { navController.popBackStack() },
                 onGenerateFlashcards = { transcript ->
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("flashcardTranscript", transcript)
+                    if (noteId != null) {
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("flashcardNoteId", noteId)
 
-                    navController.navigate("flashcards")
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("flashcardTranscript", transcript)
+
+                        navController.navigate("flashcards")
+                    }
                 }
             )
         }
@@ -175,20 +181,27 @@ fun AppNavigation() {
             )
         }
 
-        // CRITICAL: This destination handles the final step of note creation, receiving transcription data.
         composable("flashcards") {
-            val transcript = navController
-                .previousBackStackEntry
+            val prevEntry = navController.previousBackStackEntry
+
+            val noteId = prevEntry
+                ?.savedStateHandle
+                ?.get<String>("flashcardNoteId")
+                ?: ""
+
+            val transcript = prevEntry
                 ?.savedStateHandle
                 ?.get<String>("flashcardTranscript")
                 ?: ""
 
             FlashcardScreen(
+                noteId = noteId,
                 transcript = transcript,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
+        // CRITICAL: This destination handles the final step of note creation, receiving transcription data.
         composable(
             route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG={$CLIENT_REF_ID_ARG}&$AUDIO_URI_ARG={$AUDIO_URI_ARG}",
             arguments = listOf(
