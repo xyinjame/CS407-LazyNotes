@@ -15,6 +15,7 @@ import com.cs407.lazynotes.data.network.RetrofitClient
 import com.cs407.lazynotes.data.repository.FirefliesRepository
 import com.cs407.lazynotes.data.storage.FirebaseStorageServiceImpl
 import com.cs407.lazynotes.recording.RecordingRoute
+import com.cs407.lazynotes.recording.UploadingRoute
 import com.cs407.lazynotes.ui.screens.FolderSelectScreen
 import com.cs407.lazynotes.ui.screens.FolderSelectViewModel
 import com.cs407.lazynotes.ui.screens.HomeScreen
@@ -24,8 +25,6 @@ import com.cs407.lazynotes.ui.screens.NewNoteScreen
 import com.cs407.lazynotes.ui.screens.NoteScreen
 import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
-import com.cs407.lazynotes.ui.screens.uploadFileBrowse
-import com.cs407.lazynotes.ui.screens.uploadFileScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
@@ -90,8 +89,19 @@ fun AppNavigation() {
         composable("newFolder") { NewFolderScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}) }
         composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
         composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
-        composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
-        composable("uploadFileBrowse") { uploadFileBrowse(navController = navController, onNavigateToHome = {navController.navigate("home")}) }
+        composable("upload") {
+            UploadingRoute(
+                navController = navController,
+                onNavigateToHome = { navController.navigate("home") },
+                onNavigateToFolderSelect = { clientRefId ->
+                    val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId"
+                    navController.navigate(route) {
+                        popUpTo("upload") { inclusive = true }
+                    }
+                },
+                repository = firefliesRepository
+            )
+        }
 
         composable("record") {
             RecordingRoute(
