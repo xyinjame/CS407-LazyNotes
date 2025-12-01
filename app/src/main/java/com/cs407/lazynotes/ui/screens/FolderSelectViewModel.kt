@@ -1,9 +1,11 @@
 package com.cs407.lazynotes.ui.screens
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.cs407.lazynotes.data.FolderRepository
+import com.cs407.lazynotes.data.Note
+import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.repository.FirefliesRepository
 import com.cs407.lazynotes.data.repository.NetworkResult
 import com.cs407.lazynotes.data.repository.Transcript
@@ -12,112 +14,142 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 
-// A simple data class to represent a note.
-data class Note(
-    val id: String = UUID.randomUUID().toString(),
-    val title: String,
-    val content: String,
-    val folder: String
-)
-
-object NoteRepository {
-    private val _notes = mutableStateListOf<Note>()
-    val notes: List<Note> = _notes
-
-    fun addNote(note: Note) {
-        _notes.add(note)
-    }
-}
-
-// The UI state now holds the full Transcript object upon success
+/**
+ * Represents the various states of the transcription polling process.
+ */
 sealed class PollingUiState {
-    object Idle : PollingUiState()
-    object Polling : PollingUiState()
-    data class Success(val transcript: Transcript) : PollingUiState() // Changed to hold Transcript
-    data class Error(val message: String) : PollingUiState()
-    object Timeout : PollingUiState()
+    object Idle : PollingUiState() // Before polling starts
+    object Polling : PollingUiState() // Actively polling for a transcript
+    data class Success(val transcript: Transcript) : PollingUiState() // Successfully retrieved a transcript
+    data class Error(val message: String) : PollingUiState() // An unrecoverable error occurred
+    object Timeout : PollingUiState() // Polling timed out
 }
 
-class FolderSelectViewModel(private val repository: FirefliesRepository) : ViewModel() {
+/**
+ * ViewModel for the FolderSelectScreen.
+ * This class is responsible for polling for the transcript, managing the UI state,
+ * and handling the logic to save the final note to a folder.
+ */
+class FolderSelectViewModel(
+    private val firefliesRepository: FirefliesRepository,
+    private val folderRepository: FolderRepository,
+    private val noteRepository: NoteRepository
+) : ViewModel() {
 
+    // --- UI State Management ---
     private val _uiState = MutableStateFlow<PollingUiState>(PollingUiState.Idle)
     val uiState: StateFlow<PollingUiState> = _uiState.asStateFlow()
 
+    private val _noteTitle = MutableStateFlow("")
+    val noteTitle: StateFlow<String> = _noteTitle.asStateFlow()
+
+    private val _audioUri = MutableStateFlow<String?>(null)
+
+    // Expose the list of folders directly from the repository
+    val folders = folderRepository.folders
+
     private var pollingJob: Job? = null
 
-    fun startPolling(clientRefId: String) {
+    fun updateNoteTitle(newTitle: String) {
+        _noteTitle.value = newTitle
+    }
+
+    /**
+     * Starts the polling process to fetch a transcript from the Fireflies API.
+     * It implements a two-stage patience logic for retrieving the summary.
+     * @param clientRefId The unique ID of the transcript to poll for.
+     * @param audioUri The URI of the audio file to be saved with the note.
+     */
+    fun startPolling(clientRefId: String, audioUri: String?) {
         if (pollingJob?.isActive == true) return
+        _audioUri.value = audioUri
 
         pollingJob = viewModelScope.launch {
-            _uiState.update { PollingUiState.Polling }
+            _uiState.value = PollingUiState.Polling
+            val maxAttempts = 15
+            // CRITICAL: We wait 5 attempts for a summary before accepting a transcript-only note (approx 3.75 mins).
+            val summaryPatienceAttempts = 5
 
-            val maxSummaryAttempts = 5 // Try to get the summary 5 times
-            var attempt = 0
-            val totalMaxAttempts = 15 // Shorten total timeout to 5 minutes (15 * 20s = 300s)
-
-            while (attempt < totalMaxAttempts) {
-                when (val result = repository.getTranscript(clientRefId)) {
+            for (attempt in 0 until maxAttempts) {
+                when (val result = firefliesRepository.getTranscript(clientRefId)) {
                     is NetworkResult.Success -> {
                         val transcript = result.data
-                        // Check for summary first, within the first 5 attempts
-                        if (attempt < maxSummaryAttempts && transcript.summary?.overview != null) {
-                            _uiState.update { PollingUiState.Success(transcript) }
-                            return@launch // Got summary, success!
+                        
+                        // Stage 1: Check for a complete transcript with a summary.
+                        val summaryReady = transcript.summary?.overview != null
+                        if (summaryReady) {
+                            _uiState.value = PollingUiState.Success(transcript)
+                            _noteTitle.value = transcript.title ?: "Untitled Note"
+                            return@launch // Success!
                         }
 
-                        // After 5 attempts, or if summary is still null, check for sentences
-                        if (attempt >= maxSummaryAttempts) {
-                            val rawText = transcript.sentences?.mapNotNull { it.raw_text }?.joinToString(" ")
-                            if (!rawText.isNullOrBlank()) {
-                                // Create a new Transcript object with a fallback summary
-                                val fallbackTranscript = transcript.copy(
-                                    summary = com.cs407.lazynotes.data.repository.TranscriptSummary(
-                                        overview = rawText,
-                                        actionItems = null,
-                                        keywords = null,
-                                        outline = null
-                                    )
-                                )
-                                _uiState.update { PollingUiState.Success(fallbackTranscript) }
-                                return@launch // Fallback to raw text, success!
+                        // Stage 2: If past the patience threshold, accept a transcript without a summary.
+                        if (attempt >= summaryPatienceAttempts) {
+                            val transcriptReady = transcript.sentences?.isNotEmpty() == true
+                            if (transcriptReady) {
+                                _uiState.value = PollingUiState.Success(transcript)
+                                _noteTitle.value = transcript.title ?: "Untitled Note"
+                                return@launch // Success (transcript-only)
                             }
                         }
-                        // If we are here, it means we have neither summary nor sentences yet, so we keep polling.
                     }
                     is NetworkResult.Failure -> {
-                        // Only show an error if it's not the expected "not yet in the list" message.
-                        if (!result.message.contains("not yet in the list")) {
-                            _uiState.update { PollingUiState.Error(result.message) }
+                        // If it's a final error (not a 'still processing' message), stop polling.
+                        if (!result.message.contains("not yet available")) {
+                            _uiState.value = PollingUiState.Error(result.message)
                             return@launch
                         }
                     }
                 }
-                delay(20_000) // Wait 20 seconds before next poll to respect rate limits
-                attempt++
+                // Wait for 45 seconds before the next attempt.
+                delay(45_000)
             }
-            _uiState.update { PollingUiState.Timeout } // Loop finished, timeout.
+            _uiState.value = PollingUiState.Timeout // If all attempts fail
         }
     }
 
-    fun saveNoteToFolder(title: String, folder: String) {
+    /**
+     * Saves the successfully fetched transcript data as a new Note into the selected folder.
+     * @param folderName The name of the folder to save the note in.
+     */
+    fun saveNoteToFolder(folderName: String) {
         val currentState = _uiState.value
         if (currentState is PollingUiState.Success) {
-            val noteContent = currentState.transcript.summary?.overview ?: "No content available."
-            val newNote = Note(title = title, content = noteContent, folder = folder)
-            NoteRepository.addNote(newNote)
+            val transcript = currentState.transcript
+            val title = _noteTitle.value.ifBlank { "Untitled Note" }
+            val summary = transcript.summary?.overview
+            val fullTranscript = transcript.sentences?.joinToString(separator = "\n") { it.raw_text ?: "" }
+            val audioUri = _audioUri.value
+
+            // CRITICAL: Create the final Note object and add it to the repository.
+            val newNote = Note(
+                title = title,
+                folderName = folderName,
+                summary = summary,
+                transcript = fullTranscript,
+                audioUri = audioUri
+            )
+            noteRepository.addNote(newNote)
+            println("SUCCESS: Saving note '$title' to folder '$folderName' with audio URI: $audioUri")
         }
     }
 
+    /**
+     * Companion object to provide a ViewModelProvider.Factory for creating this ViewModel.
+     * This allows us to pass repositories as constructor parameters.
+     */
     companion object {
-        fun provideFactory(repository: FirefliesRepository): ViewModelProvider.Factory {
+        fun provideFactory(
+            firefliesRepo: FirefliesRepository,
+            folderRepo: FolderRepository,
+            noteRepo: NoteRepository
+        ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return FolderSelectViewModel(repository) as T
+                    return FolderSelectViewModel(firefliesRepo, folderRepo, noteRepo) as T
                 }
             }
         }
