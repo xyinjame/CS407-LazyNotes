@@ -27,14 +27,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cs407.lazynotes.data.NoteRepository
 
+/**
+ * A screen that displays the full details of a single selected note.
+ * It shows the title, summary, full transcript, and the linked audio file URI.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteDetailScreen(
     noteId: String?,
     onNavigateBack: () -> Unit
 ) {
+    // State to hold the note object fetched from the repository.
     var note by remember { mutableStateOf<com.cs407.lazynotes.data.Note?>(null) }
 
+    // CRITICAL: LaunchedEffect fetches the note data from the repository when the noteId changes.
+    // This ensures that the correct note is displayed when the user navigates to this screen.
     LaunchedEffect(noteId) {
         if (noteId != null) {
             note = NoteRepository.getNoteById(noteId)
@@ -53,6 +60,7 @@ fun NoteDetailScreen(
             )
         }
     ) {
+        // The content of the screen is scrollable in case the transcript is very long.
         Column(
             modifier = Modifier
                 .padding(it)

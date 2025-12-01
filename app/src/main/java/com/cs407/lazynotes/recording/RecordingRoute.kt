@@ -29,15 +29,16 @@ fun RecordingRoute(
     // --- State Management ---
     var isRecording by remember { mutableStateOf(false) }
     var isPaused by remember { mutableStateOf(false) }
-    var isProcessing by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) } // For showing a loading indicator
     var elapsedSeconds by remember { mutableStateOf(0) }
     var recorder: AudioRecorder? by remember { mutableStateOf(null) }
 
     // --- Timer Logic ---
+    // CRITICAL: This LaunchedEffect runs the timer. It restarts whenever isRecording or isPaused changes.
     LaunchedEffect(isRecording, isPaused) {
         if (isRecording && !isPaused) {
             while (true) {
-                delay(1_000)
+                delay(1_000) // wait for 1 second
                 elapsedSeconds++
             }
         }
@@ -45,6 +46,7 @@ fun RecordingRoute(
 
     // --- Event Handlers ---
     val onStart = {
+        // CRITICAL: A new AudioRecorder is created for each recording session.
         recorder = AudioRecorder(context).apply { start() }
         isRecording = true
         isPaused = false
@@ -61,17 +63,20 @@ fun RecordingRoute(
         isPaused = false
     }
 
-    // Explicitly define the lambda type as () -> Unit to resolve the type mismatch
+    // CRITICAL: This is the handler for when the user finishes recording.
     val onDone: () -> Unit = {
         isProcessing = true
         recorder?.stop()
         val audioFile = recorder?.getAudioFile()
         val audioUri = recorder?.getAudioUri()
 
+        // Upload the recording file regardless of its size, as long as it exists.
         if (audioFile != null) {
             coroutineScope.launch {
+                // Initiate the transcription process via the repository.
                 when (val result = repository.processRecordingForTranscription(audioFile, audioFile.nameWithoutExtension)) {
                     is NetworkResult.Success -> {
+                        // On success, navigate to the folder selection screen.
                         onNavigateToFolderSelect(result.data, audioUri.toString())
                     }
                     is NetworkResult.Failure -> {
@@ -81,12 +86,14 @@ fun RecordingRoute(
                 }
             }
         } else {
-            Toast.makeText(context, "Error: No recording found.", Toast.LENGTH_SHORT).show()
+            // Only show an error if the file was not created at all.
+            Toast.makeText(context, "Error: No recording found.", Toast.LENGTH_LONG).show()
             isProcessing = false
         }
     }
 
     // --- UI Layer ---
+    // This passes all the state and event handlers to the "dumb" RecordingScreen composable.
     RecordingScreen(
         isRecording = isRecording,
         isPaused = isPaused,
@@ -100,7 +107,8 @@ fun RecordingRoute(
         onNavigateToHome = onNavigateToHome
     )
 
-    // Clean up the recorder when the composable is disposed
+    // CRITICAL: This DisposableEffect ensures that the recorder is stopped and resources are released
+    // when the user leaves the screen, preventing memory leaks.
     DisposableEffect(Unit) {
         onDispose {
             recorder?.stop()

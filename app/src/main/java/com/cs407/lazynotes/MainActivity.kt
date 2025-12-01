@@ -40,18 +40,25 @@ private const val FOLDER_SELECT_ROUTE = "folderSelect"
 private const val NOTE_LIST_ROUTE = "noteList"
 private const val NOTE_DETAIL_ROUTE = "noteDetail"
 
+// --- Argument Keys --- Used for passing data between screens
 private const val CLIENT_REF_ID_ARG = "clientRefId"
 private const val AUDIO_URI_ARG = "audioUri"
 private const val FOLDER_NAME_ARG = "folderName"
 private const val NOTE_ID_ARG = "noteId"
 
+/**
+ * The main entry point of the application. This activity hosts the Jetpack Compose content
+ * and sets up the navigation graph.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // CRITICAL: Initialize Firebase services on app startup.
         FirebaseApp.initializeApp(this)
         val firebaseAppCheck = FirebaseAppCheck.getInstance()
+        // CRITICAL: Install AppCheck providers. Use Debug for debug builds, and PlayIntegrity for release builds.
         if (BuildConfig.DEBUG) {
             firebaseAppCheck.installAppCheckProviderFactory(DebugAppCheckProviderFactory.getInstance())
         } else {
@@ -60,20 +67,28 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LazyNotesTheme {
+                // Set up the application's navigation structure.
                 AppNavigation()
             }
         }
     }
 }
 
+/**
+ * This composable function defines the entire navigation graph of the app using NavHost.
+ * It is responsible for creating all repositories, ViewModels, and defining routes.
+ */
 @Composable
 fun AppNavigation() {
+    // The NavController is the central API for the Navigation component.
     val navController = rememberNavController()
 
+    // CRITICAL: Instantiate all singleton repositories and services here to be passed down.
     val firefliesService = RetrofitClient.firefliesService
     val storageService = FirebaseStorageServiceImpl()
     val firefliesRepository = FirefliesRepository(firefliesService, storageService)
 
+    // CRITICAL: The FolderSelectViewModel is shared across multiple screens involved in the note creation flow.
     val folderSelectViewModel: FolderSelectViewModel = viewModel(
         factory = FolderSelectViewModel.provideFactory(
             firefliesRepo = firefliesRepository,
@@ -82,6 +97,7 @@ fun AppNavigation() {
         )
     )
 
+    // NavHost is the container for all navigation destinations.
     NavHost(
         navController = navController,
         startDestination = "home"
@@ -102,6 +118,7 @@ fun AppNavigation() {
             NoteListScreen(
                 folderName = folderName,
                 onNoteClick = { noteId ->
+                    // CRITICAL: Navigate to note detail screen with the unique note ID.
                     navController.navigate("$NOTE_DETAIL_ROUTE/$noteId")
                 },
                 onNavigateBack = { navController.popBackStack() }
@@ -118,7 +135,6 @@ fun AppNavigation() {
         
         // --- Creation and Selection Flow ---
         composable("newFolderNotes") { NewFolderNotesScreen(navController = navController, onNavigateToNewFolder = {navController.navigate("newFolder")}, onNavigateToNewNote = {navController.navigate("newNote")}) }
-        // Updated composable for NewFolderScreen
         composable("newFolder") { NewFolderScreen(navController = navController) }
         composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
 
@@ -127,6 +143,7 @@ fun AppNavigation() {
                 navController = navController,
                 onNavigateToHome = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 repository = firefliesRepository,
+                // CRITICAL: After transcription is initiated, navigate to folder select screen with the necessary IDs.
                 onNavigateToFolderSelect = { clientRefId, audioUri ->
                     val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId&$AUDIO_URI_ARG=$audioUri"
                     navController.navigate(route) { popUpTo("record") { inclusive = true } }
@@ -142,12 +159,14 @@ fun AppNavigation() {
                 onNavigateToHome = { navController.navigate("home") { popUpTo("home") { inclusive = true } } },
                 repository = firefliesRepository,
                 onNavigateToFolderSelect = { clientRefId, audioUri ->
+                    // CRITICAL: Same as recording flow, navigate to folder select with transcription and audio data.
                     val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId&$AUDIO_URI_ARG=$audioUri"
                     navController.navigate(route) { popUpTo("uploadFileBrowse") { inclusive = true } }
                 }
             )
         }
 
+        // CRITICAL: This destination handles the final step of note creation, receiving transcription data.
         composable(
             route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG={$CLIENT_REF_ID_ARG}&$AUDIO_URI_ARG={$AUDIO_URI_ARG}",
             arguments = listOf(
@@ -163,7 +182,7 @@ fun AppNavigation() {
                 onNavigateToNewFolder = { navController.navigate("newFolder") },
                 clientRefId = clientRefId,
                 audioUri = audioUri, // Pass the audio URI
-                viewModel = folderSelectViewModel
+                viewModel = folderSelectViewModel // Use the shared ViewModel
             )
         }
         

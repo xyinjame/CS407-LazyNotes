@@ -25,7 +25,7 @@ class AudioRecorder(private val context: Context) {
      * It sets up the MediaRecorder with the necessary configuration and creates a file to save the recording.
      */
     fun start() {
-        // Create a new MediaRecorder instance
+        // CRITICAL: Choose the correct MediaRecorder constructor based on Android version.
         recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(context)
         } else {
@@ -33,12 +33,13 @@ class AudioRecorder(private val context: Context) {
             MediaRecorder()
         }
 
-        // Define the output file
+        // Define the output file path in the app's external files directory.
         audioFile = File(
             context.getExternalFilesDir("Music/recordings"),
             "recording_${System.currentTimeMillis()}.mp3"
         )
 
+        // CRITICAL: Configure the MediaRecorder with audio source, format, and encoder.
         recorder?.apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -46,10 +47,11 @@ class AudioRecorder(private val context: Context) {
             setOutputFile(audioFile?.absolutePath)
 
             try {
+                // Prepare and start the recording.
                 prepare()
                 start()
             } catch (e: IOException) {
-                // Handle preparation error
+                // Handle cases where the recorder fails to prepare (e.g., microphone in use).
                 e.printStackTrace()
                 recorder = null
             }
@@ -75,18 +77,18 @@ class AudioRecorder(private val context: Context) {
     }
 
     /**
-     * Stops the recording, finalizes the file, and releases resources.
+     * Stops the recording, finalizes the file, and releases MediaRecorder resources.
      */
     fun stop() {
         try {
+            // CRITICAL: stop() must be called before reset() and release() to finalize the file.
             recorder?.stop()
             recorder?.reset()
             recorder?.release()
             recorder = null
         } catch (e: Exception) {
-            // Catch exception if stop() is called in an invalid state
+            // Catch exceptions if stop() is called in an invalid state (e.g., already stopped).
             e.printStackTrace()
-            // Clean up anyway
             recorder?.reset()
             recorder?.release()
             recorder = null
