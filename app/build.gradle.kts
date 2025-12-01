@@ -1,9 +1,9 @@
 import java.util.Properties
 
-val localProps = Properties()
+val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use { localProps.load(it) }
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 plugins {
@@ -27,10 +27,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Read the secret key from the loaded local.properties file.
-        val secretKey = localProps.getProperty("firefliesApiKey") ?: "DEFAULT_KEY_FOR_LOCAL"
+        val secretKey = localProperties.getProperty("firefliesApiKey") ?: "DEFAULT_KEY_FOR_LOCAL"
         buildConfigField("String", "FIREFLIES_API_KEY", "\"$secretKey\"")
 
-        val perplexityKey = localProps.getProperty("PERPLEXITY_API_KEY") ?: ""
+        val perplexityKey = localProperties.getProperty("PERPLEXITY_API_KEY") ?: ""
         buildConfigField("String", "PERPLEXITY_API_KEY", "\"$perplexityKey\"")
     }
 
