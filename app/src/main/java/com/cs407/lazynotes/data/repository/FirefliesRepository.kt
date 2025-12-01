@@ -2,12 +2,12 @@ package com.cs407.lazynotes.data.repository
 
 import com.cs407.lazynotes.BuildConfig
 import com.cs407.lazynotes.data.network.FirefliesService
-import com.cs407.lazynotes.data.network.models.GraphQLError
 import com.cs407.lazynotes.data.network.models.GraphQLResponse
-import com.cs407.lazynotes.data.storage.StorageService
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.cs407.lazynotes.data.storage.StorageService
 import java.io.File
+
 
 sealed class NetworkResult<out T> {
     data class Success<out T>(val data: T) : NetworkResult<T>()
@@ -17,7 +17,7 @@ sealed class NetworkResult<out T> {
 data class TranscriptSummary(
     val overview: String?,
     @SerializedName("action_items")
-    val actionItems: List<String>?,
+    val actionItems: String?,
     val keywords: List<String>?,
     val outline: List<String>?
 )
@@ -106,7 +106,7 @@ class FirefliesRepository(
                 if (ourTranscript != null) {
                     NetworkResult.Success(ourTranscript)
                 } else {
-                    NetworkResult.Failure(null, "Transcription not yet in the list.")
+                    NetworkResult.Failure(null, "Transcription not yet available.")
                 }
             } else {
                 val errorMessage = response.errors?.firstOrNull()?.message ?: "Unknown API error."

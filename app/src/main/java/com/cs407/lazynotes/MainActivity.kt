@@ -11,6 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cs407.lazynotes.data.FolderRepository
+import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.network.RetrofitClient
 import com.cs407.lazynotes.data.repository.FirefliesRepository
 import com.cs407.lazynotes.data.storage.FirebaseStorageServiceImpl
@@ -35,6 +37,8 @@ import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderF
 // Route constants
 private const val FOLDER_SELECT_ROUTE = "folderSelect"
 private const val CLIENT_REF_ID_ARG = "clientRefId"
+private const val VIEW_NOTE_ROUTE = "viewNote"
+private const val FOLDER_NAME_ARG = "folderName"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,18 +79,35 @@ fun AppNavigation() {
 
     // Create the ViewModel instance that will be shared across the navigation graph
     val folderSelectViewModel: FolderSelectViewModel = viewModel(
-        factory = FolderSelectViewModel.provideFactory(firefliesRepository)
+        factory = FolderSelectViewModel.provideFactory(
+            firefliesRepo = firefliesRepository,
+            folderRepo = FolderRepository, // Pass the singleton instance
+            noteRepo = NoteRepository      // Pass the singleton instance
+        )
     )
 
     NavHost (
         navController = navController,
         startDestination = "home"
     ) {
-        // ... (other composables remain the same)
-        composable("home") { HomeScreen(onNavigateToSettings = {navController.navigate("settings")}, onNavigateToNew = {navController.navigate("newFolderNotes")}, onNavigateToViewNotes = {navController.navigate("viewNote")}) }
+        composable("home") {
+            HomeScreen(
+                onNavigateToSettings = { navController.navigate("settings") },
+                onNavigateToNew = { navController.navigate("newFolderNotes") },
+                onNavigateToViewNotes = { folderName ->
+                    navController.navigate("$VIEW_NOTE_ROUTE/$folderName")
+                }
+            )
+        }
         composable("settings") { SettingsScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToPreferences = {navController.navigate("preferences")}) }
         composable("newFolderNotes") { NewFolderNotesScreen(navController = navController, onNavigateToNewFolder = {navController.navigate("newFolder")}, onNavigateToNewNote = {navController.navigate("newNote")}) }
-        composable("viewNote") { NoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}) }
+        composable(
+            route = "$VIEW_NOTE_ROUTE/{$FOLDER_NAME_ARG}",
+            arguments = listOf(navArgument(FOLDER_NAME_ARG) { type = NavType.StringType })
+        ) { backStackEntry ->
+            val folderName = backStackEntry.arguments?.getString(FOLDER_NAME_ARG)
+            NoteScreen(navController = navController, folderName = folderName)
+        }
         composable("newFolder") { NewFolderScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}) }
         composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
         composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
