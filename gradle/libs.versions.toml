@@ -13,6 +13,7 @@ navigationCompose = "2.9.6"
 material3 = "1.4.0"
 googleGmsGoogleServices = "4.4.4"
 firebaseStorage = "22.0.1"
+runtimeSaveable = "1.9.5"
 firebaseAppcheckDebug = "19.0.1"
 
 [libraries]
@@ -34,6 +35,7 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
+androidx-compose-runtime-saveable = { group = "androidx.compose.runtime", name = "runtime-saveable", version.ref = "runtimeSaveable" }
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug", version.ref = "firebaseAppcheckDebug" }
 
 [plugins]

@@ -1,10 +1,9 @@
 import java.util.Properties
 
-// Manually load properties from local.properties file.
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    localProperties.load(localPropertiesFile.inputStream())
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
 plugins {
@@ -30,6 +29,9 @@ android {
         // Read the secret key from the loaded local.properties file.
         val secretKey = localProperties.getProperty("firefliesApiKey") ?: "DEFAULT_KEY_FOR_LOCAL"
         buildConfigField("String", "FIREFLIES_API_KEY", "\"$secretKey\"")
+
+        val perplexityKey = localProperties.getProperty("PERPLEXITY_API_KEY") ?: ""
+        buildConfigField("String", "PERPLEXITY_API_KEY", "\"$perplexityKey\"")
     }
 
     buildTypes {
@@ -69,6 +71,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.storage)
+    implementation(libs.androidx.compose.runtime.saveable)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -76,6 +79,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("org.json:json:20231013")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -98,8 +102,3 @@ dependencies {
     // App Check debug provider for emulators and non-certified devices
     debugImplementation("com.google.firebase:firebase-appcheck-debug:18.0.0")
 }
-
-
-
-
-

@@ -29,6 +29,7 @@ import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
 import com.cs407.lazynotes.ui.screens.uploadFileBrowse
 import com.cs407.lazynotes.ui.screens.uploadFileScreen
+import com.cs407.lazynotes.ui.screens.FlashcardScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
@@ -127,12 +128,26 @@ fun AppNavigation() {
 
         composable("$NOTE_DETAIL_ROUTE/{$NOTE_ID_ARG}") { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString(NOTE_ID_ARG)
+
             NoteDetailScreen(
                 noteId = noteId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onGenerateFlashcards = { transcript ->
+                    if (noteId != null) {
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("flashcardNoteId", noteId)
+
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("flashcardTranscript", transcript)
+
+                        navController.navigate("flashcards")
+                    }
+                }
             )
         }
-        
+
         // --- Creation and Selection Flow ---
         composable("newFolderNotes") { NewFolderNotesScreen(navController = navController, onNavigateToNewFolder = {navController.navigate("newFolder")}, onNavigateToNewNote = {navController.navigate("newNote")}) }
         composable("newFolder") { NewFolderScreen(navController = navController) }
@@ -152,7 +167,7 @@ fun AppNavigation() {
         }
 
         composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
-        
+
         composable("uploadFileBrowse") {
             uploadFileBrowse(
                 navController = navController,
@@ -163,6 +178,26 @@ fun AppNavigation() {
                     val route = "$FOLDER_SELECT_ROUTE?$CLIENT_REF_ID_ARG=$clientRefId&$AUDIO_URI_ARG=$audioUri"
                     navController.navigate(route) { popUpTo("uploadFileBrowse") { inclusive = true } }
                 }
+            )
+        }
+
+        composable("flashcards") {
+            val prevEntry = navController.previousBackStackEntry
+
+            val noteId = prevEntry
+                ?.savedStateHandle
+                ?.get<String>("flashcardNoteId")
+                ?: ""
+
+            val transcript = prevEntry
+                ?.savedStateHandle
+                ?.get<String>("flashcardTranscript")
+                ?: ""
+
+            FlashcardScreen(
+                noteId = noteId,
+                transcript = transcript,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -185,7 +220,7 @@ fun AppNavigation() {
                 viewModel = folderSelectViewModel // Use the shared ViewModel
             )
         }
-        
+
         // --- Settings Flow ---
         composable("settings") { SettingsScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToPreferences = {navController.navigate("preferences")}) }
         composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
