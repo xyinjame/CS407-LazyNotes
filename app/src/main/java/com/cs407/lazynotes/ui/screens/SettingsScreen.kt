@@ -37,7 +37,8 @@ import com.cs407.lazynotes.ui.theme.TopBar
 fun SettingsScreen(
     navController: NavController,
     onNavigateToHome: () -> Unit,
-    onNavigateToPreferences: () -> Unit
+    onNavigateToPreferences: () -> Unit,
+    navOut: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -85,6 +86,16 @@ fun SettingsScreen(
             SelectionCard(
                 title = stringResource(id = R.string.preference),
                 onClick = { onNavigateToPreferences() }
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MainBackground
+            )
+
+            SelectionCard(
+                title = "Sign out",
+                onClick = { navOut() }
             )
         }
     }
