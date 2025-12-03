@@ -32,22 +32,49 @@ object NoteRepository {
      */
     fun addNote(note: Note) {
         _notes.add(note)
+        // Mark the folder as recently modified
+        FolderRepository.touchFolder(note.folderName)
         println("Note '${note.title}' added to folder '${note.folderName}'. Total notes: ${_notes.size}")
     }
 
     /**
+     * Call this if you implement editing a note's content.
+     * Touches the folder to mark as recently edited.
+     */
+    fun updateNote(updated: Note) {
+        val index = _notes.indexOfFirst { it.id == updated.id }
+        if (index != -1) {
+            val old = _notes[index]
+            _notes[index] = updated
+            // If moved folders, touch both
+            if (!old.folderName.equals(updated.folderName, ignoreCase = true)) {
+                FolderRepository.touchFolder(old.folderName)
+            }
+            FolderRepository.touchFolder(updated.folderName)
+        }
+    }
+
+    /**
      * Gets all notes that belong to a specific folder.
-     * @param folderName The name of the folder.
-     * @return A list of notes for the given folder.
      */
     fun getNotesForFolder(folderName: String): List<Note> {
         return _notes.filter { it.folderName.equals(folderName, ignoreCase = true) }
     }
 
     /**
+     * Gets notes for a folder in a defined order (alphabetical by title for now).
+     */
+    fun getNotesForFolderOrdered(folderName: String, alphabeticalByTitle: Boolean = true): List<Note> {
+        val list = getNotesForFolder(folderName)
+        return if (alphabeticalByTitle) {
+            list.sortedBy { it.title.lowercase() }
+        } else {
+            list.toList()
+        }
+    }
+
+    /**
      * Finds a single note by its unique ID.
-     * @param noteId The ID of the note to find.
-     * @return The Note object if found, otherwise null.
      */
     fun getNoteById(noteId: String): Note? {
         return _notes.find { it.id == noteId }

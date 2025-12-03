@@ -19,6 +19,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cs407.lazynotes.data.Preferences
 
 @Composable
 fun preferenceScreen(
@@ -78,24 +80,30 @@ fun preferenceScreen(
 
         Column(modifier = Modifier.fillMaxWidth().padding(15.dp)) {
             Text(text = "Default Text Layout", fontSize = 16.sp, color = Color.Black)
+
+            // Observe global preference
+            val showTranscriptFirst by Preferences.showTranscriptFirst.collectAsState(initial = true)
+
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                var isTranscriptSelected by remember { mutableStateOf(true) }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "Transcript", fontSize = 14.sp, color = Color.Black)
                     RadioButton(
-                        selected = isTranscriptSelected,
-                        onClick = { isTranscriptSelected = true },
+                        selected = showTranscriptFirst,
+                        onClick = { Preferences.setShowTranscriptFirst(true) },
                         colors = RadioButtonDefaults.colors(
                             selectedColor = Color(0xFF9C27B0),
                             unselectedColor = Color.Gray
                         )
                     )
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(start = 20.dp)) {
-                    Text(text = "Bullet Points", fontSize = 14.sp, color = Color.Black)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(start = 20.dp)
+                ) {
+                    Text(text = "Summary", fontSize = 14.sp, color = Color.Black)
                     RadioButton(
-                        selected = !isTranscriptSelected,
-                        onClick = { isTranscriptSelected = false },
+                        selected = !showTranscriptFirst,
+                        onClick = { Preferences.setShowTranscriptFirst(false) },
                         colors = RadioButtonDefaults.colors(
                             selectedColor = Color(0xFF9C27B0),
                             unselectedColor = Color.Gray
@@ -112,24 +120,33 @@ fun preferenceScreen(
 
         Column(modifier = Modifier.fillMaxWidth().padding(15.dp)) {
             Text(text = "Default Folder State", fontSize = 16.sp, color = Color.Black)
-            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                var isOpenSelected by remember { mutableStateOf(true) }
+
+            // Observe global preference
+            val openByDefault by Preferences.folderDefaultOpen.collectAsState(initial = false)
+
+            Row(
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Open", fontSize = 14.sp, color = Color.Black)
+                    Text(text = "Closed", fontSize = 14.sp, color = Color.Black)
                     RadioButton(
-                        selected = isOpenSelected,
-                        onClick = { isOpenSelected = true },
+                        selected = !openByDefault,
+                        onClick = { Preferences.setFolderDefaultOpen(false) },
                         colors = RadioButtonDefaults.colors(
                             selectedColor = Color(0xFF9C27B0),
                             unselectedColor = Color.Gray
                         )
                     )
                 }
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(start = 20.dp)) {
-                    Text(text = "Closed", fontSize = 14.sp, color = Color.Black)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(start = 20.dp)
+                ) {
+                    Text(text = "Open", fontSize = 14.sp, color = Color.Black)
                     RadioButton(
-                        selected = !isOpenSelected,
-                        onClick = { isOpenSelected = false },
+                        selected = openByDefault,
+                        onClick = { Preferences.setFolderDefaultOpen(true) },
                         colors = RadioButtonDefaults.colors(
                             selectedColor = Color(0xFF9C27B0),
                             unselectedColor = Color.Gray
@@ -146,13 +163,16 @@ fun preferenceScreen(
 
         Column(modifier = Modifier.fillMaxWidth().padding(15.dp)) {
             Text(text = "Default Folder Layout", fontSize = 16.sp, color = Color.Black)
+
+            // Observe global preference
+            val alphabetical by Preferences.folderSortAlphabetical.collectAsState(initial = false)
+
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                var isRecentlyEditedSelected by remember { mutableStateOf(true) }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "Recently Edited", fontSize = 14.sp, color = Color.Black)
                     RadioButton(
-                        selected = isRecentlyEditedSelected,
-                        onClick = { isRecentlyEditedSelected = true },
+                        selected = !alphabetical,
+                        onClick = { Preferences.setFolderSortAlphabetical(false) },
                         colors = RadioButtonDefaults.colors(
                             selectedColor = Color(0xFF9C27B0),
                             unselectedColor = Color.Gray
@@ -162,8 +182,8 @@ fun preferenceScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(start = 20.dp)) {
                     Text(text = "Alphabetical", fontSize = 14.sp, color = Color.Black)
                     RadioButton(
-                        selected = !isRecentlyEditedSelected,
-                        onClick = { isRecentlyEditedSelected = false },
+                        selected = alphabetical,
+                        onClick = { Preferences.setFolderSortAlphabetical(true) },
                         colors = RadioButtonDefaults.colors(
                             selectedColor = Color(0xFF9C27B0),
                             unselectedColor = Color.Gray
