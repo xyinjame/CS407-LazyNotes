@@ -70,17 +70,6 @@ fun SettingsScreen(
                 .background(Color(0xFFF5F5F5))
                 .padding(16.dp)
         ) {
-            // Recording Settings Option
-            SelectionCard(
-                title = stringResource(id = R.string.recording),
-                onClick = { /* Navigate to recording settings */ }
-            )
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MainBackground
-            )
-
             // Preference Settings Option
             SelectionCard(
                 title = stringResource(id = R.string.preference),
