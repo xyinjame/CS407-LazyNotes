@@ -20,37 +20,7 @@ data class Note(
  */
 object NoteRepository {
 
-    private val _notes = mutableStateListOf<Note>(
-        // Sample notes for demonstration
-        Note(
-            title = "CS1",
-            folderName = "CS",
-            summary = "Introduction to Computer Science",
-            transcript = "This is the transcript for CS1...",
-            audioUri = null
-        ),
-        Note(
-            title = "Math1",
-            folderName = "Math",
-            summary = "Calculus Basics",
-            transcript = "This is the transcript for Math1...",
-            audioUri = null
-        ),
-        Note(
-            title = "CS2",
-            folderName = "CS",
-            summary = "Data Structures",
-            transcript = "This is the transcript for CS2...",
-            audioUri = null
-        ),
-        Note(
-            title = "Math2",
-            folderName = "Math",
-            summary = "Linear Algebra",
-            transcript = "This is the transcript for Math2...",
-            audioUri = null
-        )
-    )
+    private val _notes = mutableStateListOf<Note>()
 
     /**
      * Public, read-only access to the list of all notes.
