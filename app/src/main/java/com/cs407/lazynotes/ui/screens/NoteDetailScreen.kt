@@ -23,15 +23,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cs407.lazynotes.data.NoteRepository
+import com.cs407.lazynotes.data.Preferences
 
-/**
- * A screen that displays the full details of a single selected note.
- * It shows the title, summary, full transcript, and the linked audio file URI.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteDetailScreen(
@@ -39,11 +37,11 @@ fun NoteDetailScreen(
     onNavigateBack: () -> Unit,
     onGenerateFlashcards: (String) -> Unit
 ) {
-    // State to hold the note object fetched from the repository.
     var note by remember { mutableStateOf<com.cs407.lazynotes.data.Note?>(null) }
 
-    // CRITICAL: LaunchedEffect fetches the note data from the repository when the noteId changes.
-    // This ensures that the correct note is displayed when the user navigates to this screen.
+    // Observe preference: true = show transcript, false = show summary
+    val showTranscriptFirst by Preferences.showTranscriptFirst.collectAsState(initial = true)
+
     LaunchedEffect(noteId) {
         if (noteId != null) {
             note = NoteRepository.getNoteById(noteId)
@@ -61,27 +59,26 @@ fun NoteDetailScreen(
                 }
             )
         }
-    ) {
-        // The content of the screen is scrollable in case the transcript is very long.
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .padding(it)
+                .padding(paddingValues)
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             note?.let { noteDetail ->
-                // Summary Section
-                Text("Summary", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(noteDetail.summary ?: "No summary available.", style = MaterialTheme.typography.bodyLarge)
-                
-                Spacer(modifier = Modifier.height(24.dp))
+                // Choose which text to show
+                val label = if (showTranscriptFirst) "Transcript" else "Summary"
+                val content = if (showTranscriptFirst) noteDetail.transcript else noteDetail.summary
 
-                // Transcript Section
-                Text("Transcript", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                // Single chosen section
+                Text(label, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(noteDetail.transcript ?: "No transcript available.", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    content ?: "No ${label.lowercase()} available.",
+                    style = if (label == "Transcript") MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -89,16 +86,13 @@ fun NoteDetailScreen(
                 Text("Audio File", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(noteDetail.audioUri ?: "No audio file linked.", style = MaterialTheme.typography.bodySmall)
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Button to generate flashcards
-                val transcriptText = noteDetail.transcript ?: noteDetail.summary
-
+                // Button to generate flashcards: only uses the chosen content.
                 Button(
-                    onClick = {
-                        transcriptText?.let { onGenerateFlashcards(it) }
-                    },
-                    enabled = !transcriptText.isNullOrBlank()
+                    onClick = { content?.let { onGenerateFlashcards(it) } },
+                    enabled = !content.isNullOrBlank()
                 ) {
                     Text("Generate Flashcards")
                 }

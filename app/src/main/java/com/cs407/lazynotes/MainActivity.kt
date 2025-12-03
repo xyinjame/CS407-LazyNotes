@@ -110,7 +110,9 @@ fun AppNavigation() {
                 onNavigateToNew = { navController.navigate("newFolderNotes") },
                 onNavigateToViewNotes = { folderName ->
                     navController.navigate("$NOTE_LIST_ROUTE/$folderName")
-                }
+                },
+                onNoteClick = { noteId ->
+                    navController.navigate("$NOTE_DETAIL_ROUTE/$noteId")}
             )
         }
 

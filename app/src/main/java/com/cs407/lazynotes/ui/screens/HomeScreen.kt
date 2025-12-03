@@ -1,5 +1,6 @@
 package com.cs407.lazynotes.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,20 +19,35 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.cs407.lazynotes.data.FolderRepository
+import com.cs407.lazynotes.data.NoteRepository
+import com.cs407.lazynotes.data.Preferences
+import com.cs407.lazynotes.data.Folder
+import com.cs407.lazynotes.data.Note
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToNew: () -> Unit,
-    onNavigateToViewNotes: (String) -> Unit // Modified to take folder name
+    onNavigateToViewNotes: (String) -> Unit,
+    onNoteClick: (String) -> Unit
 ) {
-    // Observe the folders directly from the global repository
-    val folders = FolderRepository.folders
+    // Observe preferences
+    val alphabetical by Preferences.folderSortAlphabetical.collectAsState(initial = false)
+    val openByDefault by Preferences.folderDefaultOpen.collectAsState(initial = false)
+
+    // Obtain ordered folders
+    val folders: List<Folder> = FolderRepository.getFoldersOrdered(alphabetical)
 
     Scaffold(
         topBar = {
@@ -49,20 +65,108 @@ fun HomeScreen(
                 Icon(Icons.Default.Add, contentDescription = "New Note or Folder")
             }
         }
-    ) {
+    ) { padding ->
         Column(
-            modifier = Modifier.padding(it).fillMaxSize()
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
         ) {
             if (folders.isEmpty()) {
                 Text("No folders yet. Add one!", modifier = Modifier.padding(16.dp))
             } else {
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    items(folders) { folder ->
-                        ListItem(
-                            headlineContent = { Text(folder.name) },
-                            // Pass the folder name on click
-                            modifier = Modifier.clickable { onNavigateToViewNotes(folder.name) }
-                        )
+                if (!openByDefault) {
+                    // Closed mode: show folders only
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        items(
+                            items = folders,
+                            key = { it.name.lowercase() }
+                        ) { folder ->
+                            ListItem(
+                                headlineContent = { Text(folder.name) },
+                                modifier = Modifier.clickable { onNavigateToViewNotes(folder.name) }
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                } else {
+                    // Open mode: show folders with their notes (text-only hierarchy, no summary)
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        items(
+                            items = folders,
+                            key = { "folder_${it.name.lowercase()}" }
+                        ) { folder ->
+                            // Folder header row
+                            ListItem(
+                                headlineContent = {
+                                    Text(
+                                        text = folder.name,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                },
+                                supportingContent = null,
+                                modifier = Modifier
+                                    .clickable { onNavigateToViewNotes(folder.name) }
+                                    .padding(top = 6.dp, bottom = 4.dp)
+                            )
+
+                            // Notes under this folder
+                            val notes: List<Note> =
+                                NoteRepository.getNotesForFolderOrdered(folder.name, alphabeticalByTitle = true)
+
+                            if (notes.isEmpty()) {
+                                // Subtle "empty" message, indented to align with notes block
+                                ListItem(
+                                    headlineContent = {
+                                        Text(
+                                            text = "No notes in this folder",
+                                            color = Color.Gray,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .padding(start = 16.dp, end = 16.dp, bottom = 6.dp)
+                                        .padding(start = 8.dp) // extra indent
+                                )
+                            } else {
+                                // Notes container: indented with subtle background
+                                Column(
+                                    modifier = Modifier
+                                        .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                                        .padding(start = 8.dp) // extra indent vs folder
+                                        .background(
+                                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                                            shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp)
+                                        )
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    notes.forEachIndexed { index, note ->
+                                        ListItem(
+                                            headlineContent = {
+                                                Text(
+                                                    text = note.title,
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+                                            },
+                                            // No supportingContent: do not show summary/preview
+                                            modifier = Modifier
+                                                .clickable { onNoteClick(note.id) }
+                                                .padding(vertical = 4.dp)
+                                        )
+                                        if (index < notes.lastIndex) {
+                                            Divider(
+                                                color = Color.Black.copy(alpha = 0.06f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Group divider between folders
+                            Divider(
+                                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                                color = Color.Black.copy(alpha = 0.08f)
+                            )
+                        }
                     }
                 }
             }
