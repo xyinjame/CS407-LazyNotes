@@ -22,6 +22,7 @@ import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.UserViewModel
 import com.cs407.lazynotes.data.network.RetrofitClient
 import com.cs407.lazynotes.data.repository.FirefliesRepository
+import com.cs407.lazynotes.data.repository.PerplexityRepository
 import com.cs407.lazynotes.data.storage.FirebaseStorageServiceImpl
 import com.cs407.lazynotes.recording.RecordingRoute
 import com.cs407.lazynotes.ui.screens.FolderSelectScreen
@@ -118,7 +119,8 @@ fun AppNavigation(viewModel: UserViewModel = viewModel(),
         factory = FolderSelectViewModel.provideFactory(
             firefliesRepo = firefliesRepository,
             folderRepo = FolderRepository,
-            noteRepo = NoteRepository
+            noteRepo = NoteRepository,
+            perplexityRepo = PerplexityRepository()
         )
     )
 
@@ -139,7 +141,9 @@ fun AppNavigation(viewModel: UserViewModel = viewModel(),
                 onNavigateToNew = { navController.navigate("newFolderNotes") },
                 onNavigateToViewNotes = { folderName ->
                     navController.navigate("$NOTE_LIST_ROUTE/$folderName")
-                }
+                },
+                onNoteClick = { noteId ->
+                    navController.navigate("$NOTE_DETAIL_ROUTE/$noteId")}
             )
         }
 
@@ -180,7 +184,7 @@ fun AppNavigation(viewModel: UserViewModel = viewModel(),
         // --- Creation and Selection Flow ---
         composable("newFolderNotes") { NewFolderNotesScreen(navController = navController, onNavigateToNewFolder = {navController.navigate("newFolder")}, onNavigateToNewNote = {navController.navigate("newNote")}) }
         composable("newFolder") { NewFolderScreen(navController = navController) }
-        composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
+        composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("uploadFileBrowse")}) }
 
         composable("record") {
             RecordingRoute(
@@ -195,7 +199,6 @@ fun AppNavigation(viewModel: UserViewModel = viewModel(),
             )
         }
 
-        composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
 
         composable("uploadFileBrowse") {
             uploadFileBrowse(

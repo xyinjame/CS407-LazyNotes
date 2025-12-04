@@ -5,37 +5,56 @@ import androidx.compose.runtime.mutableStateListOf
 /**
  * A simple data class to represent a folder.
  */
-data class Folder(val name: String)
+data class Folder(
+    val name: String,
+    val lastModified: Long = System.currentTimeMillis() // tracks recent activity
+)
 
 /**
  * A singleton repository to manage folders throughout the app.
- * This ensures all parts of the app are working with the same set of folders.
  */
 object FolderRepository {
 
     // Start with some default folders for demonstration
-    private val _folders = mutableStateListOf(
-        Folder("CS"),
-        Folder("Math")
-    )
+    private val _folders = mutableStateListOf<Folder>()
 
-    /**
-     * Public, read-only access to the list of folders.
-     * Composables can observe this to react to changes.
-     */
+    // Public, read-only reference to the backing list (don’t mutate from outside)
     val folders: List<Folder> = _folders
 
     /**
      * Adds a new folder to the repository.
-     * It checks for duplicates (case-insensitive).
-     * @param folderName The name of the folder to add.
-     * @return True if the folder was added, false if it already exists.
+     * Returns true if added, false if invalid or duplicate.
      */
     fun addFolder(folderName: String): Boolean {
         if (folderName.isNotBlank() && _folders.none { it.name.equals(folderName, ignoreCase = true) }) {
-            _folders.add(Folder(folderName))
+            _folders.add(Folder(name = folderName, lastModified = System.currentTimeMillis()))
             return true
         }
         return false
+    }
+
+    /**
+     * Update a folder's lastModified to now (e.g., when a note is added/edited).
+     */
+    fun touchFolder(folderName: String) {
+        // Find index (we store folders in a mutableStateListOf; replace to trigger recomposition)
+        val index = _folders.indexOfFirst { it.name.equals(folderName, ignoreCase = true) }
+        if (index != -1) {
+            val existing = _folders[index]
+            _folders[index] = existing.copy(lastModified = System.currentTimeMillis())
+        }
+    }
+
+    /**
+     * Returns folders ordered per the current preference.
+     * - Alphabetical when 'alphabetical' is true
+     * - Recently Edited (by lastModified desc) otherwise
+     */
+    fun getFoldersOrdered(alphabetical: Boolean): List<Folder> {
+        return if (alphabetical) {
+            _folders.sortedBy { it.name.lowercase() }
+        } else {
+            _folders.sortedByDescending { it.lastModified }
+        }
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,30 +45,41 @@ fun SettingsScreen(
     onNavigateToPreferences: () -> Unit,
     navOut: () -> Unit,
 ) {
+
+    val primary = colorResource(id = R.color.primary_blue)
+    val background = colorResource(id = R.color.background_light)
+    val surface = colorResource(id = R.color.surface_white)
+    val textPrimary = colorResource(id = R.color.text_primary)
+
     // Added for sign-out fix - start
     val yourAuth = getYourFirebaseAuth()
     // Added for sign-out fix - end
 
     Scaffold(
+        containerColor = background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.settings),
                         fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = textPrimary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TopBar
+                    containerColor = surface,
+                    titleContentColor = textPrimary,
+                    navigationIconContentColor = primary
                 )
             )
         }
@@ -76,20 +88,9 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5F5F5))
-                .padding(16.dp)
+                .background(background)
+                .padding(20.dp)
         ) {
-            // Recording Settings Option
-            SelectionCard(
-                title = stringResource(id = R.string.recording),
-                onClick = { /* Navigate to recording settings */ }
-            )
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MainBackground
-            )
-
             // Preference Settings Option
             SelectionCard(
                 title = stringResource(id = R.string.preference),
