@@ -389,7 +389,6 @@ fun HomeScreen(
                                                                 Text("Choose a folder:")
                                                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                                                // List all folders as options; you can skip the current one if you want
                                                                 folders.forEach { targetFolder ->
 
                                                                     TextButton(
