@@ -28,6 +28,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import com.cs407.lazynotes.data.FolderRepository
 import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.Preferences
@@ -74,44 +79,57 @@ fun HomeScreen(
             if (folders.isEmpty()) {
                 Text("No folders yet. Add one!", modifier = Modifier.padding(16.dp))
             } else {
-                if (!openByDefault) {
-                    // Closed mode: show folders only
-                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                        items(
-                            items = folders,
-                            key = { it.name.lowercase() }
-                        ) { folder ->
-                            ListItem(
-                                headlineContent = { Text(folder.name) },
-                                modifier = Modifier.clickable { onNavigateToViewNotes(folder.name) }
-                            )
-                            HorizontalDivider()
+                // List with per-folder expand / collapse
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(
+                        items = folders,
+                        key = { it.name.lowercase() }
+                    ) { folder ->
+                        // Each folder remembers whether it is expanded.
+                        // The preference controls only the default state.
+                        var isExpanded by rememberSaveable(folder.name, openByDefault) {
+                            mutableStateOf(openByDefault)
                         }
-                    }
-                } else {
-                    // Open mode: show folders with their notes (text-only hierarchy, no summary)
-                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                        items(
-                            items = folders,
-                            key = { "folder_${it.name.lowercase()}" }
-                        ) { folder ->
-                            // Folder header row
-                            ListItem(
-                                headlineContent = {
-                                    Text(
-                                        text = folder.name,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                },
-                                supportingContent = null,
-                                modifier = Modifier
-                                    .clickable { onNavigateToViewNotes(folder.name) }
-                                    .padding(top = 6.dp, bottom = 4.dp)
-                            )
 
+                        // Folder header row with name and dropdown arrow
+                        ListItem(
+                            headlineContent = {
+                                Text(
+                                    text = folder.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.clickable {
+                                        // Tapping the name opens the folder view
+                                        onNavigateToViewNotes(folder.name)
+                                    }
+                                )
+                            },
+                            trailingContent = {
+                                IconButton(onClick = { isExpanded = !isExpanded }) {
+                                    Icon(
+                                        imageVector = if (isExpanded) {
+                                            Icons.Filled.KeyboardArrowUp
+                                        } else {
+                                            Icons.Filled.KeyboardArrowDown
+                                        },
+                                        contentDescription = if (isExpanded) {
+                                            "Collapse folder"
+                                        } else {
+                                            "Expand folder"
+                                        }
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .padding(top = 6.dp, bottom = 4.dp)
+                        )
+
+                        if (isExpanded) {
                             // Notes under this folder
                             val notes: List<Note> =
-                                NoteRepository.getNotesForFolderOrdered(folder.name, alphabeticalByTitle = true)
+                                NoteRepository.getNotesForFolderOrdered(
+                                    folder.name,
+                                    alphabeticalByTitle = true
+                                )
 
                             if (notes.isEmpty()) {
                                 // Subtle "empty" message, indented to align with notes block
@@ -147,7 +165,6 @@ fun HomeScreen(
                                                     style = MaterialTheme.typography.bodyLarge
                                                 )
                                             },
-                                            // No supportingContent: do not show summary/preview
                                             modifier = Modifier
                                                 .clickable { onNoteClick(note.id) }
                                                 .padding(vertical = 4.dp)
@@ -160,13 +177,13 @@ fun HomeScreen(
                                     }
                                 }
                             }
-
-                            // Group divider between folders
-                            Divider(
-                                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
-                                color = Color.Black.copy(alpha = 0.08f)
-                            )
                         }
+
+                        // Group divider between folders
+                        Divider(
+                            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                            color = Color.Black.copy(alpha = 0.08f)
+                        )
                     }
                 }
             }
