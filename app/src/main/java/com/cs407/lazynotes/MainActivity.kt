@@ -15,6 +15,7 @@ import com.cs407.lazynotes.data.FolderRepository
 import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.network.RetrofitClient
 import com.cs407.lazynotes.data.repository.FirefliesRepository
+import com.cs407.lazynotes.data.repository.PerplexityRepository
 import com.cs407.lazynotes.data.storage.FirebaseStorageServiceImpl
 import com.cs407.lazynotes.recording.RecordingRoute
 import com.cs407.lazynotes.ui.screens.FolderSelectScreen
@@ -94,7 +95,8 @@ fun AppNavigation() {
         factory = FolderSelectViewModel.provideFactory(
             firefliesRepo = firefliesRepository,
             folderRepo = FolderRepository,
-            noteRepo = NoteRepository
+            noteRepo = NoteRepository,
+            perplexityRepo = PerplexityRepository()
         )
     )
 
@@ -153,7 +155,7 @@ fun AppNavigation() {
         // --- Creation and Selection Flow ---
         composable("newFolderNotes") { NewFolderNotesScreen(navController = navController, onNavigateToNewFolder = {navController.navigate("newFolder")}, onNavigateToNewNote = {navController.navigate("newNote")}) }
         composable("newFolder") { NewFolderScreen(navController = navController) }
-        composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("upload")}) }
+        composable("newNote") { NewNoteScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToRecord = {navController.navigate("record")}, onNavigateToUpload = {navController.navigate("uploadFileBrowse")}) }
 
         composable("record") {
             RecordingRoute(
@@ -168,7 +170,6 @@ fun AppNavigation() {
             )
         }
 
-        composable("upload") { uploadFileScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToUploadFileBrowse = {navController.navigate("uploadFileBrowse")}) }
 
         composable("uploadFileBrowse") {
             uploadFileBrowse(

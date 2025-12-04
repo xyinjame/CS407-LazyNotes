@@ -7,4 +7,14 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="primary_blue">#4A90E2</color>
+    <color name="secondary_teal">#50C9CE</color>
+    <color name="accent_coral">#FF7E67</color>
+    <color name="background_light">#F8F9FA</color>
+    <color name="surface_white">#FFFFFF</color>
+    <color name="folder_background">#F0F4F8</color>
+    <color name="notes_card_background">#FFFFFF</color>
+    <color name="text_primary">#2C3E50</color>
+    <color name="text_secondary">#7F8C8D</color>
+    <color name="divider_color">#E8EAED</color>
 </resources>

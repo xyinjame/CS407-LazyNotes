@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,9 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,7 +27,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,27 +47,39 @@ fun NewFolderNotesScreen(
     onNavigateToNewNote: () -> Unit,
     onNavigateToNewFolder: () -> Unit
 ) {
+
+    val primary = colorResource(id = R.color.primary_blue)
+    val background = colorResource(id = R.color.background_light)
+    val surface = colorResource(id = R.color.surface_white)
+    val textPrimary = colorResource(id = R.color.text_primary)
+
     Scaffold(
+        containerColor = background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.create),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = textPrimary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TopBar
-                )
+                    containerColor = surface,
+                    titleContentColor = textPrimary,
+                    navigationIconContentColor = primary
+                ),
+                modifier = Modifier.shadow(elevation = 2.dp)
             )
         }
     ) { paddingValues ->
@@ -69,17 +87,21 @@ fun NewFolderNotesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MainBackground)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(background)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // New Note Option
             SelectionCard(
                 title = stringResource(R.string.new_notes),
                 onClick = { onNavigateToNewNote() }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // New Folder Option
             SelectionCard(
@@ -91,28 +113,35 @@ fun NewFolderNotesScreen(
 }
 
 
-@Composable fun SelectionCard(
+@Composable
+fun SelectionCard(
     title: String,
     onClick: () -> Unit
 ) {
-    Surface(
+    val surfaceWhite = colorResource(id = R.color.surface_white)
+    val textPrimary = colorResource(id = R.color.text_primary)
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {onClick()},
-        color = Color.LightGray,
-        shape = RoundedCornerShape(5.dp),
-        shadowElevation = 2.dp
+            .clickable(onClick = onClick)
+            .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = surfaceWhite
+        ),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = title,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = textPrimary
             )
         }
     }
