@@ -31,10 +31,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,7 +56,6 @@ import com.cs407.lazynotes.data.Preferences
 import com.cs407.lazynotes.data.Folder
 import com.cs407.lazynotes.data.Note
 import com.cs407.lazynotes.R
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,7 +101,8 @@ fun HomeScreen(
                 ),
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings,
+                        Icon(
+                            Icons.Default.Settings,
                             contentDescription = "Settings",
                             tint = primary
                         )
@@ -162,7 +169,10 @@ fun HomeScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .shadow(elevation = 2.dp, shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)),
+                                .shadow(
+                                    elevation = 2.dp,
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                                ),
                             colors = CardDefaults.cardColors(
                                 containerColor = surface
                             ),
@@ -242,11 +252,19 @@ fun HomeScreen(
                                                 .padding(start = 8.dp) // extra indent vs folder
                                                 .background(
                                                     color = folderBackground,
-                                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp)
+                                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(
+                                                        10.dp
+                                                    )
                                                 )
                                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                                         ) {
                                             notes.forEachIndexed { index, note ->
+                                                // Menu + rename/delete state
+                                                var noteMenuExpanded by remember { mutableStateOf(false) }
+                                                var isRenaming by remember { mutableStateOf(false) }
+                                                var isDeleting by remember { mutableStateOf(false) }
+                                                var editedTitle by remember { mutableStateOf(note.title) }
+
                                                 ListItem(
                                                     headlineContent = {
                                                         Text(
@@ -256,10 +274,103 @@ fun HomeScreen(
                                                             fontWeight = FontWeight.Medium
                                                         )
                                                     },
+                                                    trailingContent = {
+                                                        // Menu for this note
+                                                        IconButton(onClick = { noteMenuExpanded = true }) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.MoreVert,
+                                                                contentDescription = "Note options"
+                                                            )
+                                                        }
+                                                        DropdownMenu(
+                                                            expanded = noteMenuExpanded,
+                                                            onDismissRequest = { noteMenuExpanded = false }
+                                                        ) {
+                                                            DropdownMenuItem(
+                                                                text = { Text("Rename") },
+                                                                onClick = {
+                                                                    noteMenuExpanded = false
+                                                                    editedTitle = note.title
+                                                                    isRenaming = true
+                                                                }
+                                                            )
+                                                            DropdownMenuItem(
+                                                                text = { Text("Delete") },
+                                                                onClick = {
+                                                                    noteMenuExpanded = false
+                                                                    isDeleting = true
+                                                                }
+                                                            )
+                                                        }
+                                                    },
+                                                    // No supportingContent: do not show summary/preview
                                                     modifier = Modifier
                                                         .clickable { onNoteClick(note.id) }
                                                         .padding(vertical = 4.dp)
                                                 )
+
+                                                // Rename dialog for this note
+                                                if (isRenaming) {
+                                                    AlertDialog(
+                                                        onDismissRequest = { isRenaming = false },
+                                                        title = { Text("Rename note") },
+                                                        text = {
+                                                            TextField(
+                                                                value = editedTitle,
+                                                                onValueChange = { editedTitle = it },
+                                                                singleLine = true
+                                                            )
+                                                        },
+                                                        confirmButton = {
+                                                            TextButton(
+                                                                onClick = {
+                                                                    val trimmed = editedTitle.trim()
+                                                                    if (trimmed.isNotEmpty()) {
+                                                                        NoteRepository.updateNoteTitle(
+                                                                            note.id,
+                                                                            trimmed
+                                                                        )
+                                                                    }
+                                                                    isRenaming = false
+                                                                }
+                                                            ) {
+                                                                Text("Save")
+                                                            }
+                                                        },
+                                                        dismissButton = {
+                                                            TextButton(onClick = { isRenaming = false }) {
+                                                                Text("Cancel")
+                                                            }
+                                                        }
+                                                    )
+                                                }
+
+                                                // Delete confirmation dialog for this note
+                                                if (isDeleting) {
+                                                    AlertDialog(
+                                                        onDismissRequest = { isDeleting = false },
+                                                        title = { Text("Delete note") },
+                                                        text = {
+                                                            Text("Are you sure you want to delete this note? This action cannot be undone.")
+                                                        },
+                                                        confirmButton = {
+                                                            TextButton(
+                                                                onClick = {
+                                                                    NoteRepository.deleteNote(note.id)
+                                                                    isDeleting = false
+                                                                }
+                                                            ) {
+                                                                Text("Delete")
+                                                            }
+                                                        },
+                                                        dismissButton = {
+                                                            TextButton(onClick = { isDeleting = false }) {
+                                                                Text("Cancel")
+                                                            }
+                                                        }
+                                                    )
+                                                }
+
                                                 if (index < notes.lastIndex) {
                                                     Divider(
                                                         modifier = Modifier.padding(horizontal = 12.dp),
@@ -269,12 +380,18 @@ fun HomeScreen(
                                                 }
                                             }
                                         }
-                                        Spacer(modifier = Modifier.height(8.dp))
                                     }
                                 }
                             }
                         }
+
+                        // Group divider between folders
+                        Divider(
+                            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                            color = Color.Black.copy(alpha = 0.08f)
+                        )
                     }
+
                     item {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
