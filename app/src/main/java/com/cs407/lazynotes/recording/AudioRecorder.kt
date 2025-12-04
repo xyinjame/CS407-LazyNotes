@@ -41,9 +41,13 @@ class AudioRecorder(private val context: Context) {
 
         // CRITICAL: Configure the MediaRecorder with audio source, format, and encoder.
         recorder?.apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setAudioSource(MediaRecorder.AudioSource.DEFAULT)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+
+            setAudioEncodingBitRate(128000)
+            setAudioSamplingRate(44100)
+
             setOutputFile(audioFile?.absolutePath)
 
             try {

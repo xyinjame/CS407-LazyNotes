@@ -74,7 +74,7 @@ class FirefliesRepository(
             val mutationInput = mapOf(
                 "url" to publicAudioUrl,
                 "title" to title,
-                "client_reference_id" to clientRefId
+                "client_reference_id" to clientRefId,
             )
             val requestBody = mapOf("query" to mutation, "variables" to mapOf("input" to mutationInput))
             

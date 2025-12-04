@@ -8,7 +8,9 @@ import com.cs407.lazynotes.data.Note
 import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.repository.FirefliesRepository
 import com.cs407.lazynotes.data.repository.NetworkResult
+import com.cs407.lazynotes.data.repository.PerplexityRepository
 import com.cs407.lazynotes.data.repository.Transcript
+import com.cs407.lazynotes.data.repository.TranscriptSummary
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +37,8 @@ sealed class PollingUiState {
 class FolderSelectViewModel(
     private val firefliesRepository: FirefliesRepository,
     private val folderRepository: FolderRepository,
-    private val noteRepository: NoteRepository
+    private val noteRepository: NoteRepository,
+    private val perplexityRepository: PerplexityRepository
 ) : ViewModel() {
 
     // --- UI State Management ---
@@ -78,20 +81,30 @@ class FolderSelectViewModel(
                         val transcript = result.data
                         
                         // Stage 1: Check for a complete transcript with a summary.
-                        val summaryReady = transcript.summary?.overview != null
-                        if (summaryReady) {
-                            _uiState.value = PollingUiState.Success(transcript)
-                            _noteTitle.value = transcript.title ?: "Untitled Note"
-                            return@launch // Success!
-                        }
+                        val hasSentences = transcript.sentences?.isNotEmpty() == true
 
-                        // Stage 2: If past the patience threshold, accept a transcript without a summary.
-                        if (attempt >= summaryPatienceAttempts) {
-                            val transcriptReady = transcript.sentences?.isNotEmpty() == true
-                            if (transcriptReady) {
-                                _uiState.value = PollingUiState.Success(transcript)
-                                _noteTitle.value = transcript.title ?: "Untitled Note"
-                                return@launch // Success (transcript-only)
+                        if (hasSentences) {
+                            val transcriptText = transcript.sentences?.joinToString(" ") { it.raw_text ?: ""} ?: ""
+
+                            when (val summaryResult = perplexityRepository.generateSummary(transcriptText)) {
+                                is NetworkResult.Success -> {
+                                    val completeSummary = transcript.copy (
+                                        summary = TranscriptSummary(
+                                            overview = summaryResult.data,
+                                            actionItems = null,
+                                            keywords = null,
+                                            outline = null,
+                                        )
+                                    )
+                                    _uiState.value = PollingUiState.Success(completeSummary)
+                                    _noteTitle.value = transcript.title ?: "Untitled Note"
+                                    return@launch
+                                }
+                                is NetworkResult.Failure -> {
+                                    _uiState.value = PollingUiState.Success(transcript)
+                                    _noteTitle.value = transcript.title ?: "Untitled Note"
+                                    return@launch
+                                }
                             }
                         }
                     }
@@ -144,12 +157,18 @@ class FolderSelectViewModel(
         fun provideFactory(
             firefliesRepo: FirefliesRepository,
             folderRepo: FolderRepository,
-            noteRepo: NoteRepository
+            noteRepo: NoteRepository,
+            perplexityRepo: PerplexityRepository
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return FolderSelectViewModel(firefliesRepo, folderRepo, noteRepo) as T
+                    return FolderSelectViewModel(
+                        firefliesRepo,
+                        folderRepo,
+                        noteRepo,
+                        perplexityRepo
+                    ) as T
                 }
             }
         }

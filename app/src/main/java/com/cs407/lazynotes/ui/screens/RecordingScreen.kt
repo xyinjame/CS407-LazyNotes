@@ -10,12 +10,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cs407.lazynotes.ui.theme.MainBackground
 import com.cs407.lazynotes.ui.theme.TopBar
+import com.cs407.lazynotes.R
 
 /**
  * A "dumb" UI component for the recording screen.
@@ -38,13 +41,51 @@ fun RecordingScreen(
 ) {
     var showDoneConfirm by remember { mutableStateOf(false) }
 
+    val primary = colorResource(id = R.color.primary_blue)
+    val secondary = colorResource(id = R.color.secondary_teal)
+    val accent = colorResource(id = R.color.accent_coral)
+    val background = colorResource(id = R.color.background_light)
+    val surface = colorResource(id = R.color.surface_white)
+    val textPrimary = colorResource(id = R.color.text_primary)
+    val textSecondary = colorResource(id = R.color.text_secondary)
+
     Scaffold(
+        containerColor = background,
         topBar = {
             TopAppBar(
-                title = { Text("New Recording", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } },
-                actions = { IconButton(onClick = onNavigateToHome) { Icon(Icons.Default.Home, "Home") } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFE0E0E0))
+                title = {
+                    Text(
+                        "New Recording",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = textPrimary
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            "Back",
+                            tint = primary
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHome) {
+                        Icon(
+                            Icons.Default.Home,
+                            "Home",
+                            tint = primary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = surface,
+                    titleContentColor = textPrimary,
+                    navigationIconContentColor = primary,
+                    actionIconContentColor = primary
+                ),
+                modifier = Modifier.shadow(elevation = 2.dp)
             )
         },
         bottomBar = {
@@ -56,15 +97,15 @@ fun RecordingScreen(
                 )
             }
         }
-    ) {
+    ) { paddingValues ->
         Box(
-            modifier = modifier.fillMaxSize().padding(it).background(MainBackground)
+            modifier = modifier.fillMaxSize().padding(paddingValues).background(background)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(32.dp))
 
                 Text(
                     text = when {
@@ -72,11 +113,17 @@ fun RecordingScreen(
                         isPaused -> "Paused"
                         else -> "Ready to record"
                     },
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = textPrimary
                 )
 
-                Spacer(Modifier.height(8.dp))
-                Text(text = timeText, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = timeText,
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = primary
+                )
 
                 Spacer(Modifier.weight(1f))
 
@@ -87,8 +134,16 @@ fun RecordingScreen(
                 }
 
                 if (isProcessing) {
-                    CircularProgressIndicator(modifier = Modifier.padding(top=16.dp))
-                    Text(text="Processing...", modifier = Modifier.padding(top=8.dp))
+                    CircularProgressIndicator(
+                        modifier = Modifier.padding(top = 16.dp),
+                        color = secondary
+                    )
+                    Text(
+                        text="Processing...",
+                        modifier = Modifier.padding(top = 8.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = textSecondary
+                    )
                 }
                 
                 Spacer(Modifier.weight(1f))
@@ -97,17 +152,45 @@ fun RecordingScreen(
             if (showDoneConfirm) {
                 AlertDialog(
                     onDismissRequest = { showDoneConfirm = false },
-                    title = { Text("Finish recording?") },
-                    text = { Text("Are you sure you want to stop and save this recording?") },
+                    title = {
+                        Text(
+                            "Finish recording?",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = textPrimary
+                        )
+                    },
+                    text = {
+                        Text(
+                            "Are you sure you want to stop and save this recording?",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = textPrimary
+                        )
+                    },
                     confirmButton = {
                         TextButton(onClick = {
                             showDoneConfirm = false
                             onDoneClick()
-                        }) { Text("Yes") }
+                        }) {
+                            Text(
+                                "Yes",
+                                color = accent,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showDoneConfirm = false }) { Text("Cancel") }
-                    }
+                        TextButton(onClick = {
+                            showDoneConfirm = false
+                        }) {
+                            Text(
+                                "Cancel",
+                                color = textSecondary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    },
+                    containerColor = surface
                 )
             }
         }
@@ -120,17 +203,28 @@ private fun CenterCircleButton(
     onClick: () -> Unit,
     enabled: Boolean
 ) {
-    OutlinedButton(
+
+    val accent = colorResource(id = R.color.accent_coral)
+
+    Button(
         onClick = onClick,
         enabled = enabled,
         shape = CircleShape,
-        modifier = Modifier.size(120.dp),
+        modifier = Modifier
+            .size(140.dp)
+            .shadow(elevation = 4.dp, shape = CircleShape),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.White,
-            contentColor = Color(0xFF6200EE)
+            containerColor = accent,
+            contentColor = Color.White,
+            disabledContainerColor = accent.copy(alpha = 0.5f),
+            disabledContentColor = Color.White.copy(alpha = 0.5f)
         ),
     ) {
-        Text(label, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(
+            label,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -140,16 +234,59 @@ private fun BottomBar(
     onPauseResumeClick: () -> Unit,
     onDoneClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().height(64.dp).background(TopBar),
-        verticalAlignment = Alignment.CenterVertically
+
+    val primary = colorResource(id = R.color.primary_blue)
+    val accent = colorResource(id = R.color.accent_coral)
+    val surface = colorResource(id = R.color.surface_white)
+    val dividerColor = colorResource(id = R.color.divider_color)
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = surface,
+        shadowElevation = 8.dp
     ) {
-        TextButton(onClick = onPauseResumeClick, modifier = Modifier.weight(1f).fillMaxHeight()) {
-            Text(if (isPaused) "RESUME" else "PAUSE", color = Color.Black)
-        }
-        Box(Modifier.width(1.dp).fillMaxHeight().background(MaterialTheme.colorScheme.onError.copy(alpha = 0.25f)))
-        TextButton(onClick = onDoneClick, modifier = Modifier.weight(1f).fillMaxHeight()) {
-            Text("DONE", color = Color.Black)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPauseResumeClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .padding(horizontal = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primary,
+                    contentColor = Color.White
+                ),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    if (isPaused) "RESUME" else "PAUSE",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Button(
+                onClick = onDoneClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .padding(horizontal = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = accent,
+                    contentColor = Color.White
+                ),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    "DONE",
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
