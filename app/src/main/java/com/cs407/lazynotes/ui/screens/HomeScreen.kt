@@ -242,14 +242,14 @@ fun HomeScreen(
                                             ),
                                             modifier = Modifier
                                                 .padding(start = 16.dp, end = 16.dp, bottom = 6.dp)
-                                                .padding(start = 8.dp)
+                                                .padding(start = 8.dp) // extra indent
                                         )
                                     } else {
                                         // Notes container: indented with subtle background
                                         Column(
                                             modifier = Modifier
                                                 .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
-                                                .padding(start = 8.dp)
+                                                .padding(start = 8.dp) // extra indent vs folder
                                                 .background(
                                                     color = folderBackground,
                                                     shape = androidx.compose.foundation.shape.RoundedCornerShape(
