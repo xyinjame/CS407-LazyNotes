@@ -31,6 +31,10 @@ import androidx.navigation.NavController
 import com.cs407.lazynotes.R
 import com.cs407.lazynotes.ui.theme.MainBackground
 import com.cs407.lazynotes.ui.theme.TopBar
+// Added for sign-out fix - start
+import com.cs407.lazynotes.ui.screens.getYourFirebaseAuth
+import com.cs407.lazynotes.ui.screens.signOutCustomAuth
+// Added for sign-out fix - end
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +44,10 @@ fun SettingsScreen(
     onNavigateToPreferences: () -> Unit,
     navOut: () -> Unit,
 ) {
+    // Added for sign-out fix - start
+    val yourAuth = getYourFirebaseAuth()
+    // Added for sign-out fix - end
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -95,7 +103,12 @@ fun SettingsScreen(
 
             SelectionCard(
                 title = "Sign out",
-                onClick = { navOut() }
+                onClick = {
+                    // Added for sign-out fix - start
+                    signOutCustomAuth(yourAuth)
+                    // Added for sign-out fix - end
+                    navOut()
+                }
             )
         }
     }

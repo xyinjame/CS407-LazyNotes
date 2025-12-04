@@ -29,14 +29,13 @@ import com.cs407.lazynotes.R
 import com.cs407.lazynotes.data.NoteDatabase
 import com.cs407.lazynotes.data.User
 import com.cs407.lazynotes.data.UserState
-import kotlinx.coroutines.runBlocking
-//import java.security.MessageDigest
+import kotlinx.coroutines.launch
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.auth
-import com.google.firebase.Firebase
-import kotlinx.coroutines.launch
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun ErrorText(error: String?, modifier: Modifier = Modifier) {
@@ -47,19 +46,16 @@ fun ErrorText(error: String?, modifier: Modifier = Modifier) {
 @Composable
 fun userEmail(modifier: Modifier = Modifier): String {
     var email by remember { mutableStateOf("") }
-
     TextField(
         value = email,
         onValueChange = { email = it },
         label = { Text(stringResource(R.string.email_hint)) })
-
     return email
 }
 
 @Composable
 fun userPassword(modifier: Modifier = Modifier): String {
     var passwd by remember { mutableStateOf("") }
-
     TextField(
         value = passwd,
         onValueChange = { passwd = it },
@@ -67,16 +63,15 @@ fun userPassword(modifier: Modifier = Modifier): String {
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
     )
-
     return passwd
 }
 
 fun createAccount(
     email: String,
     password: String,
+    auth: FirebaseAuth,
     onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit,
 ) {
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             onComplete(task.isSuccessful, task.exception, auth.currentUser)
@@ -86,144 +81,74 @@ fun createAccount(
 fun signIn(
     email: String,
     password: String,
+    auth: FirebaseAuth,
     onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit,
 ) {
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
     auth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful)
                 onComplete(task.isSuccessful, task.exception, auth.currentUser)
             else
-                createAccount(email, password, onComplete)
+                createAccount(email, password, auth, onComplete)
         }
 }
 
-//fun hash(input: String): String {
-//    return MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
-//        .fold("") { str, it -> str + "%02x".format(it) }
-//}
+fun signOutCustomAuth(auth: FirebaseAuth) {
+    auth.signOut()
+}
 
-@Composable
-fun LogInSignUpButton(
-    email: String,
-    password: String,
-    onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit,
-    modifier: Modifier = Modifier
+fun updateName(
+    name: String,
+    auth: FirebaseAuth,
+    onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit
 ) {
-    val context = LocalContext.current
-//    val userPasswdKV =
-//        context.getSharedPreferences(context.getString(R.string.userPasswdKV), Context.MODE_PRIVATE)
-
-    Button(onClick = {
-        var errorString: String? = null
-
-        val emailResult = checkEmail(email)
-        if (emailResult == EmailResult.Empty) {
-            errorString = context.getString(R.string.empty_email)
-        } else if (emailResult == EmailResult.Invalid) {
-            errorString = context.getString(R.string.invalid_email)
-        }
-
-        val passwordResult = checkPassword(password)
-        if (errorString == null) {
-            errorString = when (passwordResult) {
-                PasswordResult.Empty -> {
-                    context.getString(R.string.empty_password)
-                }
-
-                PasswordResult.Short -> {
-                    context.getString(R.string.short_password)
-                }
-
-                PasswordResult.Invalid -> {
-                    context.getString(R.string.invalid_password)
-                }
-
-                PasswordResult.Valid -> {
-                    null
-                }
-            }
-        }
-
-        if (errorString != null)
-            onComplete(false, Exception(errorString), null)
-        else
-            signIn(email, password, onComplete)
-    }) {
-        Text(stringResource(R.string.login_button))
-    }
-}
-
-enum class EmailResult {
-    Valid,
-    Empty,
-    Invalid,
-}
-
-fun checkEmail(email: String): EmailResult {
-    if (email.isEmpty())
-        return EmailResult.Empty
-    // 1. username of email should only contain "0-9, a-z, _, A-Z, ."
-    // 2. there is one and only one "@" between username and server address
-    // 3. there are multiple domain names with at least one top-level domain
-    // 4. domain name "0-9, a-z, -, A-Z" (could not have "_" but "-" is valid)
-    // 5. multiple domain separate with '.'
-    // 6. top level domain should only contain letters and at lest 2 letters
-    // Remind students this email check only valid for this course
-    val pattern = Regex("^[\\w.]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$")
-    return if (pattern.matches(email)) EmailResult.Valid else EmailResult.Invalid
-}
-
-enum class PasswordResult {
-    Valid,
-    Empty,
-    Short,
-    Invalid
-}
-
-fun checkPassword(password: String): PasswordResult {
-    // 1. password should contain at least one uppercase letter, lowercase letter, one digit
-    // 2. minimum length: 5
-    if (password.isEmpty())
-        return PasswordResult.Empty
-    if (password.length < 5)
-        return PasswordResult.Short
-    if (Regex("\\d+").containsMatchIn(password) &&
-        Regex("[a-z]+").containsMatchIn(password) &&
-        Regex("[A-Z]+").containsMatchIn(password)
-    )
-        return PasswordResult.Valid
-    return PasswordResult.Invalid
-}
-
-fun updateName(name: String, onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit) {
-    val user = Firebase.auth.currentUser
-
+    val user = auth.currentUser
     val profileUpdates = userProfileChangeRequest {
         displayName = name
-//        photoUri = Uri.parse("https://example.com/jane-q-user/profile.jpg")
     }
-
-    user!!.updateProfile(profileUpdates)
-        .addOnCompleteListener { task ->
+    user?.updateProfile(profileUpdates)
+        ?.addOnCompleteListener { task ->
             onComplete(task.isSuccessful, task.exception, user)
         }
 }
 
 @Composable
+fun getYourFirebaseAuth(): FirebaseAuth {
+    val context = LocalContext.current
+    return remember(key1 = "custom-firebase-auth") {
+        try {
+            val yourOptions = FirebaseOptions.Builder()
+                .setApiKey("AIzaSyADfafGhxgAVMd6SnrlPay_iGBRuO6Awe4")
+                .setApplicationId("1:1097491779682:android:cb89f65fe146552ff3813b")
+                .setProjectId("lazynotes-83b8d")
+                .build()
+
+            val customFirebaseAppName = "login-firebase-instance"
+            if (FirebaseApp.getApps(context).none { it.name == customFirebaseAppName }) {
+                FirebaseApp.initializeApp(context, yourOptions, customFirebaseAppName)
+            }
+            FirebaseAuth.getInstance(FirebaseApp.getInstance(customFirebaseAppName))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            FirebaseAuth.getInstance()
+        }
+    }
+}
+
+@Composable
 fun AskNamePage(
+    auth: FirebaseAuth,
     onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var name by remember { mutableStateOf("") }
-
     TextField(
         value = name,
         onValueChange = { name = it },
         label = { Text(stringResource(R.string.name_hint)) })
     Spacer(modifier = Modifier.height(16.dp))
     Button(onClick = {
-        updateName(name, onComplete)
+        updateName(name, auth, onComplete)
     }) {
         Text(stringResource(R.string.confirm_button))
     }
@@ -231,7 +156,8 @@ fun AskNamePage(
 
 @Composable
 fun LoginPage(
-    modifier: Modifier = Modifier, loginButtonClick: (UserState) -> Unit
+    modifier: Modifier = Modifier,
+    loginButtonClick: (UserState) -> Unit
 ) {
     var email: String
     var password: String
@@ -239,18 +165,19 @@ fun LoginPage(
     var name: Boolean by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val noteDB = NoteDatabase.getDatabase(context)
-    val scope = androidx.compose.runtime.rememberCoroutineScope() // NEW
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
-    // NEW: helper to ensure a local user row exists and return it
+    val yourAuth = getYourFirebaseAuth()
+    val currentUser by remember(yourAuth) { mutableStateOf(yourAuth.currentUser) }
+
     suspend fun ensureLocalUser(uid: String): User {
         val existing = noteDB.userDao().getByUID(uid)
         if (existing != null) return existing
         noteDB.userDao().insert(User(userUID = uid))
         return noteDB.userDao().getByUID(uid)
-            ?: throw IllegalStateException("Failed to create local user")
+            ?: throw IllegalStateException("Failed to create local user record")
     }
 
-    // UPDATED: use scope.launch instead of LaunchedEffect and avoid !!
     val onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit =
         { isSuccess, taskException, signedUser ->
             if (isSuccess && signedUser != null) {
@@ -277,9 +204,11 @@ fun LoginPage(
             }
         }
 
-    // unchanged: auto-continue if already logged in
-    val user = Firebase.auth.currentUser
-    if (user != null) onComplete(true, null, user)
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            onComplete(true, null, currentUser)
+        }
+    }
 
     Scaffold(modifier) { innerPadding ->
         Column(
@@ -294,10 +223,72 @@ fun LoginPage(
                 email = userEmail()
                 password = userPassword()
                 Spacer(modifier = Modifier.height(16.dp))
-                LogInSignUpButton(email, password, onComplete)
+                LogInSignUpButton(email, password, yourAuth, onComplete)
             } else {
-                AskNamePage(onComplete)
+                AskNamePage(auth = yourAuth, onComplete = onComplete)
             }
         }
     }
+}
+
+@Composable
+fun LogInSignUpButton(
+    email: String,
+    password: String,
+    auth: FirebaseAuth,
+    onComplete: (Boolean, Exception?, FirebaseUser?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    Button(onClick = {
+        var errorString: String? = null
+
+        val emailResult = checkEmail(email)
+        if (emailResult == EmailResult.Empty) {
+            errorString = context.getString(R.string.empty_email)
+        } else if (emailResult == EmailResult.Invalid) {
+            errorString = context.getString(R.string.invalid_email)
+        }
+
+        val passwordResult = checkPassword(password)
+        if (errorString == null) {
+            errorString = when (passwordResult) {
+                PasswordResult.Empty -> context.getString(R.string.empty_password)
+                PasswordResult.Short -> context.getString(R.string.short_password)
+                PasswordResult.Invalid -> context.getString(R.string.invalid_password)
+                PasswordResult.Valid -> null
+            }
+        }
+
+        if (errorString != null)
+            onComplete(false, Exception(errorString), null)
+        else
+            signIn(email, password, auth, onComplete)
+    }) {
+        Text(stringResource(R.string.login_button))
+    }
+}
+
+enum class EmailResult {
+    Valid, Empty, Invalid
+}
+
+fun checkEmail(email: String): EmailResult {
+    if (email.isEmpty()) return EmailResult.Empty
+    val pattern = Regex("^[\\w.]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}$")
+    return if (pattern.matches(email)) EmailResult.Valid else EmailResult.Invalid
+}
+
+enum class PasswordResult {
+    Valid, Empty, Short, Invalid
+}
+
+fun checkPassword(password: String): PasswordResult {
+    if (password.isEmpty()) return PasswordResult.Empty
+    if (password.length < 5) return PasswordResult.Short
+    val hasDigit = Regex("\\d+").containsMatchIn(password)
+    val hasLowercase = Regex("[a-z]+").containsMatchIn(password)
+    val hasUppercase = Regex("[A-Z]+").containsMatchIn(password)
+    return if (hasDigit && hasLowercase && hasUppercase) PasswordResult.Valid else PasswordResult.Invalid
 }
