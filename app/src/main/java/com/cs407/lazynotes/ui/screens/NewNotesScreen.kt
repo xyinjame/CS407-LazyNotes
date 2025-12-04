@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,7 +25,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,21 +46,30 @@ fun NewNoteScreen(
     onNavigateToRecord: () -> Unit,
     onNavigateToUpload: () -> Unit
 ) {
+
+    val primary = colorResource(id = R.color.primary_blue)
+    val background = colorResource(id = R.color.background_light)
+    val surface = colorResource(id = R.color.surface_white)
+    val textPrimary = colorResource(id = R.color.text_primary)
+
     Scaffold(
+        containerColor = background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = stringResource(id = R.string.new_notes),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = textPrimary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = primary
                         )
                     }
                 },
@@ -65,13 +77,18 @@ fun NewNoteScreen(
                     IconButton(onClick = { onNavigateToHome() }) {
                         Icon(
                             imageVector = Icons.Default.Home,
-                            contentDescription = "Home"
+                            contentDescription = "Home",
+                            tint = primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TopBar
-                )
+                    containerColor = surface,
+                    titleContentColor = textPrimary,
+                    navigationIconContentColor = primary,
+                    actionIconContentColor = primary
+                ),
+                modifier = Modifier.shadow(elevation = 2.dp)
             )
         }
     ) { paddingValues ->
@@ -79,17 +96,21 @@ fun NewNoteScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MainBackground)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(background)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Record audio button
             SelectionCard(
                 title = stringResource(id = R.string.record),
                 onClick = { onNavigateToRecord() }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Upload audio button
             SelectionCard(

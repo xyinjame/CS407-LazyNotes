@@ -47,27 +47,39 @@ fun NewFolderNotesScreen(
     onNavigateToNewNote: () -> Unit,
     onNavigateToNewFolder: () -> Unit
 ) {
+
+    val primary = colorResource(id = R.color.primary_blue)
+    val background = colorResource(id = R.color.background_light)
+    val surface = colorResource(id = R.color.surface_white)
+    val textPrimary = colorResource(id = R.color.text_primary)
+
     Scaffold(
+        containerColor = background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.create),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = textPrimary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = TopBar
-                )
+                    containerColor = surface,
+                    titleContentColor = textPrimary,
+                    navigationIconContentColor = primary
+                ),
+                modifier = Modifier.shadow(elevation = 2.dp)
             )
         }
     ) { paddingValues ->
@@ -75,17 +87,21 @@ fun NewFolderNotesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MainBackground)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(background)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // New Note Option
             SelectionCard(
                 title = stringResource(R.string.new_notes),
                 onClick = { onNavigateToNewNote() }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // New Folder Option
             SelectionCard(
