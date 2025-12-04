@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.cs407.lazynotes.data.NoteRepository
+import com.cs407.lazynotes.data.FolderRepository
 import com.cs407.lazynotes.data.Preferences
 import com.cs407.lazynotes.R
 
@@ -65,6 +66,10 @@ fun NoteDetailScreen(
 
     // Local state for delete confirmation
     var isDeleting by remember { mutableStateOf(false) }
+
+    // Local state for "move to folder"
+    var isMoving by remember { mutableStateOf(false) }
+    val folders = FolderRepository.folders
 
     // Observe preference: true = show transcript, false = show summary
     val showTranscriptFirst by Preferences.showTranscriptFirst.collectAsState(initial = true)
@@ -135,6 +140,15 @@ fun NoteDetailScreen(
                                 menuExpanded = false
                                 if (note != null) {
                                     isDeleting = true
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Move to folder") },
+                            onClick = {
+                                menuExpanded = false
+                                if (note != null) {
+                                    isMoving = true
                                 }
                             }
                         )
@@ -325,6 +339,40 @@ fun NoteDetailScreen(
                     Text("Cancel")
                 }
             }
+        )
+    }
+
+    // Dialog to move note to a different folder
+    if (isMoving && note != null) {
+        val current = note!!
+        AlertDialog(
+            onDismissRequest = { isMoving = false },
+            title = { Text("Move note") },
+            text = {
+                Column {
+                    Text("Choose a folder:")
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    folders.forEach { targetFolder ->
+
+                        TextButton(
+                            onClick = {
+                                NoteRepository.moveNoteToFolder(current.id, targetFolder.name)
+                                note = current.copy(folderName = targetFolder.name)
+                                isMoving = false
+                            }
+                        ) {
+                            Text(targetFolder.name)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { isMoving = false }) {
+                    Text("Close")
+                }
+            },
+            dismissButton = {}
         )
     }
 }

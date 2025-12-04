@@ -97,4 +97,15 @@ object NoteRepository {
     fun deleteNote(noteId: String) {
         _notes.removeAll { it.id == noteId }
     }
+
+    /**
+     * Move note to another folder.
+     */
+    fun moveNoteToFolder(noteId: String, newFolderName: String) {
+        val index = _notes.indexOfFirst { it.id == noteId }
+        if (index != -1) {
+            val old = _notes[index]
+            _notes[index] = old.copy(folderName = newFolderName)
+        }
+    }
 }

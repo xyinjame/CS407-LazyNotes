@@ -263,6 +263,7 @@ fun HomeScreen(
                                                 var noteMenuExpanded by remember { mutableStateOf(false) }
                                                 var isRenaming by remember { mutableStateOf(false) }
                                                 var isDeleting by remember { mutableStateOf(false) }
+                                                var isMoving by remember { mutableStateOf(false) }
                                                 var editedTitle by remember { mutableStateOf(note.title) }
 
                                                 ListItem(
@@ -299,6 +300,13 @@ fun HomeScreen(
                                                                 onClick = {
                                                                     noteMenuExpanded = false
                                                                     isDeleting = true
+                                                                }
+                                                            )
+                                                            DropdownMenuItem(
+                                                                text = { Text("Move to folder") },
+                                                                onClick = {
+                                                                    noteMenuExpanded = false
+                                                                    isMoving = true
                                                                 }
                                                             )
                                                         }
@@ -368,6 +376,38 @@ fun HomeScreen(
                                                                 Text("Cancel")
                                                             }
                                                         }
+                                                    )
+                                                }
+
+                                                // Move-to-folder dialog for this note
+                                                if (isMoving) {
+                                                    AlertDialog(
+                                                        onDismissRequest = { isMoving = false },
+                                                        title = { Text("Move note") },
+                                                        text = {
+                                                            Column {
+                                                                Text("Choose a folder:")
+                                                                Spacer(modifier = Modifier.height(8.dp))
+
+                                                                folders.forEach { targetFolder ->
+
+                                                                    TextButton(
+                                                                        onClick = {
+                                                                            NoteRepository.moveNoteToFolder(note.id, targetFolder.name)
+                                                                            isMoving = false
+                                                                        }
+                                                                    ) {
+                                                                        Text(targetFolder.name)
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        confirmButton = {
+                                                            TextButton(onClick = { isMoving = false }) {
+                                                                Text("Close")
+                                                            }
+                                                        },
+                                                        dismissButton = {}
                                                     )
                                                 }
 
