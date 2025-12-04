@@ -30,7 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.cs407.lazynotes.data.FolderRepository
@@ -158,6 +165,12 @@ fun HomeScreen(
                                         .padding(horizontal = 12.dp, vertical = 6.dp)
                                 ) {
                                     notes.forEachIndexed { index, note ->
+
+                                        // Menu + rename state
+                                        var noteMenuExpanded by remember { mutableStateOf(false) }
+                                        var isRenaming by remember { mutableStateOf(false) }
+                                        var editedTitle by remember { mutableStateOf(note.title) }
+
                                         ListItem(
                                             headlineContent = {
                                                 Text(
@@ -165,10 +178,67 @@ fun HomeScreen(
                                                     style = MaterialTheme.typography.bodyLarge
                                                 )
                                             },
+                                            trailingContent = {
+                                                // Menu for this note
+                                                IconButton(onClick = { noteMenuExpanded = true }) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.MoreVert,
+                                                        contentDescription = "Note options"
+                                                    )
+                                                }
+                                                DropdownMenu(
+                                                    expanded = noteMenuExpanded,
+                                                    onDismissRequest = { noteMenuExpanded = false }
+                                                ) {
+                                                    DropdownMenuItem(
+                                                        text = { Text("Rename") },
+                                                        onClick = {
+                                                            noteMenuExpanded = false
+                                                            editedTitle = note.title
+                                                            isRenaming = true
+                                                        }
+                                                    )
+                                                }
+                                            },
+                                            // No supportingContent: do not show summary/preview
                                             modifier = Modifier
                                                 .clickable { onNoteClick(note.id) }
                                                 .padding(vertical = 4.dp)
                                         )
+
+                                        // Rename dialog for this note
+                                        if (isRenaming) {
+                                            AlertDialog(
+                                                onDismissRequest = { isRenaming = false },
+                                                title = { Text("Rename note") },
+                                                text = {
+                                                    TextField(
+                                                        value = editedTitle,
+                                                        onValueChange = { editedTitle = it },
+                                                        singleLine = true
+                                                    )
+                                                },
+                                                confirmButton = {
+                                                    TextButton(
+                                                        onClick = {
+                                                            val trimmed = editedTitle.trim()
+                                                            if (trimmed.isNotEmpty()) {
+                                                                NoteRepository.updateNoteTitle(note.id, trimmed)
+                                                            }
+                                                            isRenaming = false
+                                                        }
+                                                    ) {
+                                                        Text("Save")
+                                                    }
+                                                },
+                                                dismissButton = {
+                                                    TextButton(onClick = { isRenaming = false }) {
+                                                        Text("Cancel")
+                                                    }
+                                                }
+                                            )
+                                        }
+
                                         if (index < notes.lastIndex) {
                                             Divider(
                                                 color = Color.Black.copy(alpha = 0.06f)

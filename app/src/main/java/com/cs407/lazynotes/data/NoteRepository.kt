@@ -79,4 +79,15 @@ object NoteRepository {
     fun getNoteById(noteId: String): Note? {
         return _notes.find { it.id == noteId }
     }
+
+    /**
+     * Update note title.
+     */
+    fun updateNoteTitle(noteId: String, newTitle: String) {
+        val index = _notes.indexOfFirst { it.id == noteId }
+        if (index != -1) {
+            val old = _notes[index]
+            _notes[index] = old.copy(title = newTitle)
+        }
+    }
 }
