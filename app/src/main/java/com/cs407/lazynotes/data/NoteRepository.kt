@@ -90,4 +90,11 @@ object NoteRepository {
             _notes[index] = old.copy(title = newTitle)
         }
     }
+
+    /**
+     * Delete note.
+     */
+    fun deleteNote(noteId: String) {
+        _notes.removeAll { it.id == noteId }
+    }
 }

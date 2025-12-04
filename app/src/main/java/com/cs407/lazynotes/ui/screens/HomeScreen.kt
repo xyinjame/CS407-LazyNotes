@@ -166,9 +166,10 @@ fun HomeScreen(
                                 ) {
                                     notes.forEachIndexed { index, note ->
 
-                                        // Menu + rename state
+                                        // Menu + rename/delete state
                                         var noteMenuExpanded by remember { mutableStateOf(false) }
                                         var isRenaming by remember { mutableStateOf(false) }
+                                        var isDeleting by remember { mutableStateOf(false) }
                                         var editedTitle by remember { mutableStateOf(note.title) }
 
                                         ListItem(
@@ -196,6 +197,13 @@ fun HomeScreen(
                                                             noteMenuExpanded = false
                                                             editedTitle = note.title
                                                             isRenaming = true
+                                                        }
+                                                    )
+                                                    DropdownMenuItem(
+                                                        text = { Text("Delete") },
+                                                        onClick = {
+                                                            noteMenuExpanded = false
+                                                            isDeleting = true
                                                         }
                                                     )
                                                 }
@@ -233,6 +241,32 @@ fun HomeScreen(
                                                 },
                                                 dismissButton = {
                                                     TextButton(onClick = { isRenaming = false }) {
+                                                        Text("Cancel")
+                                                    }
+                                                }
+                                            )
+                                        }
+
+                                        // Delete confirmation dialog for this note
+                                        if (isDeleting) {
+                                            AlertDialog(
+                                                onDismissRequest = { isDeleting = false },
+                                                title = { Text("Delete note") },
+                                                text = {
+                                                    Text("Are you sure you want to delete this note? This action cannot be undone.")
+                                                },
+                                                confirmButton = {
+                                                    TextButton(
+                                                        onClick = {
+                                                            NoteRepository.deleteNote(note.id)
+                                                            isDeleting = false
+                                                        }
+                                                    ) {
+                                                        Text("Delete")
+                                                    }
+                                                },
+                                                dismissButton = {
+                                                    TextButton(onClick = { isDeleting = false }) {
                                                         Text("Cancel")
                                                     }
                                                 }

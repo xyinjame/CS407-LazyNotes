@@ -51,6 +51,9 @@ fun NoteDetailScreen(
     var isEditingTitle by remember { mutableStateOf(false) }
     var editedTitle by remember { mutableStateOf("") }
 
+    // Local state for delete confirmation
+    var isDeleting by remember { mutableStateOf(false) }
+
     // Observe preference: true = show transcript, false = show summary
     val showTranscriptFirst by Preferences.showTranscriptFirst.collectAsState(initial = true)
 
@@ -90,6 +93,15 @@ fun NoteDetailScreen(
                                 note?.let {
                                     editedTitle = it.title
                                     isEditingTitle = true
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete") },
+                            onClick = {
+                                menuExpanded = false
+                                if (note != null) {
+                                    isDeleting = true
                                 }
                             }
                         )
@@ -169,6 +181,31 @@ fun NoteDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { isEditingTitle = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    // Dialog to confirm delete
+    if (isDeleting && note != null) {
+        AlertDialog(
+            onDismissRequest = { isDeleting = false },
+            title = { Text("Delete note") },
+            text = { Text("Are you sure you want to delete this note? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val current = note!!
+                        NoteRepository.deleteNote(current.id)
+                        isDeleting = false
+                        onNavigateBack() // go back after deleting
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { isDeleting = false }) {
                     Text("Cancel")
                 }
             }
