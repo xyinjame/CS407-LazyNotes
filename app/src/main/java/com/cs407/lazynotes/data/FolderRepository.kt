@@ -16,10 +16,7 @@ data class Folder(
 object FolderRepository {
 
     // Start with some default folders for demonstration
-    private val _folders = mutableStateListOf(
-        Folder(name = "Math"),
-        Folder(name = "CS")
-    )
+    private val _folders = mutableStateListOf<Folder>()
 
     // Public, read-only reference to the backing list (don’t mutate from outside)
     val folders: List<Folder> = _folders

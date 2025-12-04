@@ -37,9 +37,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import com.cs407.lazynotes.data.FolderRepository
 import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.Preferences
@@ -116,19 +119,27 @@ fun HomeScreen(
                 .fillMaxSize()
         ) {
             if (folders.isEmpty()) {
-                Text(
-                    "No folders yet. Add one!",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = textPrimary,
-                    modifier = Modifier.padding(16.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "Tap the + button to create your first folder and start organizing your notes!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = textSecondary
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "No folders yet. Add one!",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = textPrimary,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Tap the + button to create your first folder and start organizing your notes!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = textSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                }
             } else {
                 // List with per-folder expand / collapse
                 LazyColumn(
@@ -169,7 +180,9 @@ fun HomeScreen(
                                             modifier = Modifier.clickable {
                                                 // Tapping the name opens the folder view
                                                 onNavigateToViewNotes(folder.name)
-                                            }
+                                            },
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     },
                                     trailingContent = {
