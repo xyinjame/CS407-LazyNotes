@@ -157,7 +157,7 @@ fun NoteListScreen(
                                         Text(
                                             note.summary ?: "No summary available",
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = textSecondary, // 🎨 SUMMARY COLOR
+                                            color = textSecondary, 
                                             maxLines = 2,
                                             overflow = TextOverflow.Ellipsis,
                                             modifier = Modifier.padding(top = 4.dp)
