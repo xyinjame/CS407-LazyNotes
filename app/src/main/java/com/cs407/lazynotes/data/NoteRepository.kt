@@ -156,10 +156,26 @@ object NoteRepository {
      * Update note title.
      */
     fun updateNoteTitle(noteId: String, newTitle: String) {
+        val userId = currentUserId ?: return
         val index = _notes.indexOfFirst { it.id == noteId }
         if (index != -1) {
             val old = _notes[index]
-            _notes[index] = old.copy(title = newTitle)
+            val updated = old.copy(title = newTitle)
+            _notes[index] = updated
+
+            CoroutineScope(Dispatchers.IO).launch {
+                database.noteDao().update(
+                    NoteEntity(
+                        id = updated.id,
+                        userId = userId,
+                        title = updated.title,
+                        folderName = updated.folderName,
+                        summary = updated.summary,
+                        transcript = updated.transcript,
+                        audioUri = updated.audioUri
+                    )
+                )
+            }
         }
     }
 
@@ -167,10 +183,16 @@ object NoteRepository {
      * Delete note.
      */
     fun deleteNote(noteId: String) {
-        _notes.removeAll { it.id == noteId }
+        val removed = _notes.firstOrNull { it.id == noteId }
+        if (removed != null) {
+            _notes.remove(removed)
 
-        CoroutineScope(Dispatchers.IO).launch {
-            database.noteDao().delete(noteId)
+            // Mark the folder as recently edited
+            FolderRepository.touchFolder(removed.folderName)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                database.noteDao().delete(noteId)
+            }
         }
     }
 
@@ -178,11 +200,62 @@ object NoteRepository {
      * Move note to another folder.
      */
     fun moveNoteToFolder(noteId: String, newFolderName: String) {
+        val userId = currentUserId ?: return
         val index = _notes.indexOfFirst { it.id == noteId }
         if (index != -1) {
             val old = _notes[index]
-            _notes[index] = old.copy(folderName = newFolderName)
+            val updated = old.copy(folderName = newFolderName)
+            _notes[index] = updated
+
+            // Mark the folder as recently edited
+            FolderRepository.touchFolder(old.folderName)
+            FolderRepository.touchFolder(newFolderName)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                database.noteDao().update(
+                    NoteEntity(
+                        id = updated.id,
+                        userId = userId,
+                        title = updated.title,
+                        folderName = updated.folderName,
+                        summary = updated.summary,
+                        transcript = updated.transcript,
+                        audioUri = updated.audioUri
+                    )
+                )
+            }
         }
+    }
+
+    /**
+     * Helper for adjusting notes after folder rename.
+     */
+    fun renameNotesForFolder(oldFolderName: String, newFolderName: String) {
+        val userId = currentUserId ?: return
+
+        _notes.forEachIndexed { index, note ->
+            if (note.folderName.equals(oldFolderName, ignoreCase = true)) {
+                val updated = note.copy(folderName = newFolderName)
+                _notes[index] = updated
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    database.noteDao().update(
+                        NoteEntity(
+                            id = updated.id,
+                            userId = userId,
+                            title = updated.title,
+                            folderName = updated.folderName,
+                            summary = updated.summary,
+                            transcript = updated.transcript,
+                            audioUri = updated.audioUri
+                        )
+                    )
+                }
+            }
+        }
+
+        // Mark the folder as recently edited
+        FolderRepository.touchFolder(newFolderName)
     }
 
     fun clear() {
