@@ -105,6 +105,36 @@ object FolderRepository {
         }
     }
 
+    fun renameFolder(oldName: String, newName: String): Boolean {
+        val userId = currentUserId ?: return false
+        if (newName.isBlank()) return false
+
+        // Prevent duplicate folder names (case insensitive)
+        if (_folders.any { it.name.equals(newName, ignoreCase = true) }) return false
+
+        val index = _folders.indexOfFirst { it.name.equals(oldName, ignoreCase = true) }
+        if (index == -1) return false
+
+        val timestamp = System.currentTimeMillis()
+        val existing = _folders[index]
+        val updated = existing.copy(
+            name = newName,
+            lastModified = timestamp
+        )
+        _folders[index] = updated
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.folderDao().renameFolderForUser(
+                userId = userId,
+                oldName = oldName,
+                newName = newName,
+                timestamp = timestamp
+            )
+        }
+
+        return true
+    }
+
     fun clear() {
         _folders.clear()
         currentUserId = null

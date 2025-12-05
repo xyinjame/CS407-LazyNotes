@@ -33,6 +33,17 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.cs407.lazynotes.data.FolderRepository
 import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.R
 
@@ -46,14 +57,17 @@ fun NoteListScreen(
     onNoteClick: (String) -> Unit, // Callback to navigate to detail view
     onNavigateBack: () -> Unit
 ) {
+    // Use a local state for the current folder name so it can update after rename
+    val initialFolderName = folderName ?: "Notes"
+    var currentFolderName by rememberSaveable { mutableStateOf(initialFolderName) }
+
     // Get the notes for the specific folder from the global repository
-    val notes = remember(folderName) {
-        if (folderName != null) {
-            NoteRepository.getNotesForFolder(folderName)
-        } else {
-            emptyList()
-        }
-    }
+    val notes = NoteRepository.getNotesForFolder(currentFolderName)
+
+    // State for folder rename menu and dialog
+    var folderMenuExpanded by remember { mutableStateOf(false) }
+    var isRenamingFolder by remember { mutableStateOf(false) }
+    var editedFolderName by remember { mutableStateOf(currentFolderName) }
 
     val primary = colorResource(id = R.color.primary_blue)
     val background = colorResource(id = R.color.background_light)
@@ -68,7 +82,7 @@ fun NoteListScreen(
             TopAppBar(
                 title = {
                     Text(
-                        folderName ?: "Notes",
+                        currentFolderName,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = textPrimary,
@@ -82,6 +96,29 @@ fun NoteListScreen(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             "Back",
                             tint = primary
+                        )
+                    }
+                },
+                actions = {
+                    // Menu for folder actions
+                    IconButton(onClick = { folderMenuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Folder options",
+                            tint = primary
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = folderMenuExpanded,
+                        onDismissRequest = { folderMenuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Rename Folder") },
+                            onClick = {
+                                folderMenuExpanded = false
+                                editedFolderName = currentFolderName
+                                isRenamingFolder = true
+                            }
                         )
                     }
                 },
@@ -183,5 +220,43 @@ fun NoteListScreen(
                 }
             }
         }
+    }
+
+    // Dialog to rename the folder
+    if (isRenamingFolder) {
+        AlertDialog(
+            onDismissRequest = { isRenamingFolder = false },
+            title = { Text("Rename folder") },
+            text = {
+                TextField(
+                    value = editedFolderName,
+                    onValueChange = { editedFolderName = it },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val trimmed = editedFolderName.trim()
+                        if (trimmed.isNotEmpty() && trimmed != currentFolderName) {
+                            val renamed = FolderRepository.renameFolder(currentFolderName, trimmed)
+                            if (renamed) {
+                                // Keep notes within the folder in sync
+                                NoteRepository.renameNotesForFolder(currentFolderName, trimmed)
+                                currentFolderName = trimmed
+                            }
+                        }
+                        isRenamingFolder = false
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { isRenamingFolder = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

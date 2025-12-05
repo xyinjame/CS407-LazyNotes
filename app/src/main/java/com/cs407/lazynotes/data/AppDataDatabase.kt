@@ -34,6 +34,19 @@ interface FolderDao {
 
     @Query("DELETE FROM folders WHERE userId = :userId")
     suspend fun deleteAllForUser(userId: Int)
+
+    @Query("""
+        UPDATE folders
+        SET name = :newName,
+            lastModified = :timestamp
+        WHERE userId = :userId AND name = :oldName
+    """)
+    suspend fun renameFolderForUser(
+        userId: Int,
+        oldName: String,
+        newName: String,
+        timestamp: Long
+    )
 }
 
 @Dao
