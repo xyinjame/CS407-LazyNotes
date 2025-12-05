@@ -14,4 +14,20 @@
     <string name="recording">Recording</string>
     <string name="preference">Preference</string>
     <string name="folder_name">Folder Name</string>
+
+    <string name="email_hint">Enter Email</string>
+    <string name="password_hint">Enter Password</string>
+    <string name="empty_email">Email is empty</string>
+    <string name="invalid_email">Invalid Email</string>
+    <string name="empty_password">Empty Password</string>
+    <string name="short_password">Short Password</string>
+    <string name="invalid_password">Password should contain at least one lowercase letter, one uppercase letter, and one digit</string>
+    <string name="login_button">Log In or Sign Up</string>
+    <string name="name_hint">Enter Name</string>
+    <string name="confirm_button">Confirm</string>
+    <string name="logout">Log Out</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="edit_greetings">Edit Greetings</string>
+    <string name="enter_greeting_hint">Enter Greetings</string>
+    <string name="note_database">noteDatabase</string>
 </resources>

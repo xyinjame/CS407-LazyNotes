@@ -1,6 +1,11 @@
 package com.cs407.lazynotes.data
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 /**
@@ -27,13 +32,64 @@ object NoteRepository {
      */
     val notes: List<Note> = _notes
 
+    private var currentUserId: Int? = null
+    private lateinit var database: AppDataDatabase
+
+    fun initialize(context: Context, userId: Int) {
+        currentUserId = userId
+        database = AppDataDatabase.getDatabase(context)
+        loadNotes()
+    }
+
+    private fun loadNotes() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val userId = currentUserId ?: return@launch
+            val allNoteEntities = mutableListOf<NoteEntity>()
+
+            val folders = database.folderDao().getFoldersByUser(userId)
+            folders.forEach { folder ->
+                val folderNotes = database.noteDao().getNotesForFolder(userId, folder.name)
+                allNoteEntities.addAll(folderNotes)
+            }
+
+            withContext(Dispatchers.Main) {
+                _notes.clear()
+                _notes.addAll(allNoteEntities.map {
+                    Note(
+                        id = it.id,
+                        title = it.title,
+                        folderName = it.folderName,
+                        summary = it.summary,
+                        transcript = it.transcript,
+                        audioUri = it.audioUri
+                    )
+                })
+            }
+        }
+    }
+
     /**
      * Adds a new note to the repository.
      */
     fun addNote(note: Note) {
+        val userId = currentUserId ?: return
         _notes.add(note)
-        // Mark the folder as recently modified
         FolderRepository.touchFolder(note.folderName)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.noteDao().insert(
+                NoteEntity(
+                    id = note.id,
+                    userId = userId,
+                    title = note.title,
+                    folderName = note.folderName,
+                    summary = note.summary,
+                    transcript = note.transcript,
+                    audioUri = note.audioUri
+                )
+            )
+        }
+
         println("Note '${note.title}' added to folder '${note.folderName}'. Total notes: ${_notes.size}")
     }
 
@@ -42,6 +98,7 @@ object NoteRepository {
      * Touches the folder to mark as recently edited.
      */
     fun updateNote(updated: Note) {
+        val userId = currentUserId ?: return
         val index = _notes.indexOfFirst { it.id == updated.id }
         if (index != -1) {
             val old = _notes[index]
@@ -51,6 +108,21 @@ object NoteRepository {
                 FolderRepository.touchFolder(old.folderName)
             }
             FolderRepository.touchFolder(updated.folderName)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                database.noteDao().update(
+                    NoteEntity(
+                        id = updated.id,
+                        userId = userId,
+                        title = updated.title,
+                        folderName = updated.folderName,
+                        summary = updated.summary,
+                        transcript = updated.transcript,
+                        audioUri = updated.audioUri
+                    )
+                )
+            }
+
         }
     }
 
@@ -96,6 +168,10 @@ object NoteRepository {
      */
     fun deleteNote(noteId: String) {
         _notes.removeAll { it.id == noteId }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.noteDao().delete(noteId)
+        }
     }
 
     /**
@@ -107,5 +183,10 @@ object NoteRepository {
             val old = _notes[index]
             _notes[index] = old.copy(folderName = newFolderName)
         }
+    }
+
+    fun clear() {
+        _notes.clear()
+        currentUserId = null
     }
 }

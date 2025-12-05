@@ -4,8 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cs407.lazynotes.data.FolderRepository
 import com.cs407.lazynotes.data.NoteRepository
+import com.cs407.lazynotes.data.UserViewModel
 import com.cs407.lazynotes.data.network.RetrofitClient
 import com.cs407.lazynotes.data.repository.FirefliesRepository
 import com.cs407.lazynotes.data.repository.PerplexityRepository
@@ -32,10 +39,22 @@ import com.cs407.lazynotes.ui.screens.uploadFileBrowse
 import com.cs407.lazynotes.ui.screens.uploadFileScreen
 import com.cs407.lazynotes.ui.screens.FlashcardScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.cs407.lazynotes.ui.screens.LoginPage
+import com.cs407.lazynotes.ui.theme.MainBackground
 
 // --- Route Constants --- We define these to avoid typos and for easy reference
 private const val FOLDER_SELECT_ROUTE = "folderSelect"
@@ -53,8 +72,12 @@ private const val NOTE_ID_ARG = "noteId"
  * and sets up the navigation graph.
  */
 class MainActivity : ComponentActivity() {
+
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = Firebase.auth
         enableEdgeToEdge()
 
         // CRITICAL: Initialize Firebase services on app startup.
@@ -81,9 +104,10 @@ class MainActivity : ComponentActivity() {
  * It is responsible for creating all repositories, ViewModels, and defining routes.
  */
 @Composable
-fun AppNavigation() {
-    // The NavController is the central API for the Navigation component.
-    val navController = rememberNavController()
+fun AppNavigation(viewModel: UserViewModel = viewModel(),
+                  navController: NavHostController = rememberNavController()) {
+
+    val userState by viewModel.userState.collectAsState()
 
     // CRITICAL: Instantiate all singleton repositories and services here to be passed down.
     val firefliesService = RetrofitClient.firefliesService
@@ -101,10 +125,15 @@ fun AppNavigation() {
     )
 
     // NavHost is the container for all navigation destinations.
+    val isLoggedIn = userState.id != 0 && userState.name.isNotEmpty()
+    val startDestination = if (isLoggedIn) "home" else "login"
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = startDestination
     ) {
+        composable("login") {
+            LoginPage(Modifier) { viewModel.setUser(it) }
+        }
         // --- Main Screens ---
         composable("home") {
             HomeScreen(
@@ -225,7 +254,12 @@ fun AppNavigation() {
         }
 
         // --- Settings Flow ---
-        composable("settings") { SettingsScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToPreferences = {navController.navigate("preferences")}) }
+        composable("settings") { SettingsScreen(navController = navController, onNavigateToHome = {navController.navigate("home")}, onNavigateToPreferences = {navController.navigate("preferences")}, navOut = { Firebase.auth.signOut() }) }
         composable("preferences") { preferenceScreen(onNavigateToHome = {navController.navigate("home")}) }
     }
+}
+
+@Composable
+private fun Splash() {
+    androidx.compose.material3.Surface(modifier = Modifier) {}
 }
