@@ -261,6 +261,5 @@ fun AppNavigation(viewModel: UserViewModel = viewModel(),
 
 @Composable
 private fun Splash() {
-    // Replace with your own branding. Keep it simple to avoid layout jank.
     androidx.compose.material3.Surface(modifier = Modifier) {}
 }

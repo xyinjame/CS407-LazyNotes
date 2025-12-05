@@ -2,6 +2,7 @@ package com.cs407.lazynotes.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -126,26 +127,29 @@ fun HomeScreen(
                 .fillMaxSize()
         ) {
             if (folders.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        "No folders yet. Add one!",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = textPrimary,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "Tap the + button to create your first folder and start organizing your notes!",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = textSecondary,
-                        textAlign = TextAlign.Center
-                    )
+                    Column(
+                        modifier = Modifier.padding(32.dp, 0.dp, 32.dp, 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "No folders yet. Add one!",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = textPrimary,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "Tap the + button to create your first folder and start organizing your notes!",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = textSecondary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             } else {
                 // List with per-folder expand / collapse
@@ -424,12 +428,6 @@ fun HomeScreen(
                                 }
                             }
                         }
-
-                        // Group divider between folders
-                        Divider(
-                            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
-                            color = Color.Black.copy(alpha = 0.08f)
-                        )
                     }
 
                     item {
