@@ -105,6 +105,9 @@ object FolderRepository {
         }
     }
 
+    /**
+     * Update a folder's name
+     */
     fun renameFolder(oldName: String, newName: String): Boolean {
         val userId = currentUserId ?: return false
         if (newName.isBlank()) return false
@@ -130,6 +133,25 @@ object FolderRepository {
                 newName = newName,
                 timestamp = timestamp
             )
+        }
+
+        return true
+    }
+
+    /**
+     * Delete a folder by name.
+     * Returns true if the folder existed and was removed.
+     */
+    fun deleteFolder(folderName: String): Boolean {
+        val userId = currentUserId ?: return false
+
+        val index = _folders.indexOfFirst { it.name.equals(folderName, ignoreCase = true) }
+        if (index == -1) return false
+
+        _folders.removeAt(index)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.folderDao().deleteFolderForUser(userId, folderName)
         }
 
         return true

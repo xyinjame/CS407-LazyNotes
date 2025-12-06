@@ -35,6 +35,9 @@ interface FolderDao {
     @Query("DELETE FROM folders WHERE userId = :userId")
     suspend fun deleteAllForUser(userId: Int)
 
+    @Query("DELETE FROM folders WHERE userId = :userId AND name = :folderName")
+    suspend fun deleteFolderForUser(userId: Int, folderName: String)
+
     @Query("""
         UPDATE folders
         SET name = :newName,
@@ -68,6 +71,9 @@ interface NoteDao {
 
     @Query("DELETE FROM notes WHERE userId = :userId")
     suspend fun deleteAllForUser(userId: Int)
+
+    @Query("DELETE FROM notes WHERE userId = :userId AND folderName = :folderName")
+    suspend fun deleteNotesForFolder(userId: Int, folderName: String)
 }
 
 @Database(entities = [FolderEntity::class, NoteEntity::class], version = 1)

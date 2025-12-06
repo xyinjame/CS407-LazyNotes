@@ -258,6 +258,19 @@ object NoteRepository {
         FolderRepository.touchFolder(newFolderName)
     }
 
+    /**
+     * Delete all notes under a given folder.
+     */
+    fun deleteNotesInFolder(folderName: String) {
+        val userId = currentUserId ?: return
+
+        _notes.removeAll { it.folderName.equals(folderName, ignoreCase = true) }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            database.noteDao().deleteNotesForFolder(userId, folderName)
+        }
+    }
+
     fun clear() {
         _notes.clear()
         currentUserId = null

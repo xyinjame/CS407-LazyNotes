@@ -64,10 +64,11 @@ fun NoteListScreen(
     // Get the notes for the specific folder from the global repository
     val notes = NoteRepository.getNotesForFolder(currentFolderName)
 
-    // State for folder rename menu and dialog
+    // State for folder rename + delete menu and dialog
     var folderMenuExpanded by remember { mutableStateOf(false) }
     var isRenamingFolder by remember { mutableStateOf(false) }
     var editedFolderName by remember { mutableStateOf(currentFolderName) }
+    var pendingDeleteFolder by remember { mutableStateOf(false) }
 
     val primary = colorResource(id = R.color.primary_blue)
     val background = colorResource(id = R.color.background_light)
@@ -118,6 +119,13 @@ fun NoteListScreen(
                                 folderMenuExpanded = false
                                 editedFolderName = currentFolderName
                                 isRenamingFolder = true
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete Folder") },
+                            onClick = {
+                                folderMenuExpanded = false
+                                pendingDeleteFolder = true
                             }
                         )
                     }
@@ -254,6 +262,36 @@ fun NoteListScreen(
             },
             dismissButton = {
                 TextButton(onClick = { isRenamingFolder = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // Dialog to confirm folder delete
+    if (pendingDeleteFolder) {
+        AlertDialog(
+            onDismissRequest = { pendingDeleteFolder = false },
+            title = { Text("Delete Folder") },
+            text = {
+                Text("Delete folder \"$currentFolderName\" and all its notes?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // Delete folder and its notes
+                        FolderRepository.deleteFolder(currentFolderName)
+                        NoteRepository.deleteNotesInFolder(currentFolderName)
+
+                        pendingDeleteFolder = false
+                        onNavigateBack()
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteFolder = false }) {
                     Text("Cancel")
                 }
             }
