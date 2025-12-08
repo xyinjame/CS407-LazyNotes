@@ -66,11 +66,15 @@ class FolderSelectViewModel(
      * @param audioUri The URI of the audio file to be saved with the note.
      */
     fun startPolling(clientRefId: String, audioUri: String?) {
-        if (pollingJob?.isActive == true) return
+        // Cancel any previous polling run
+        pollingJob?.cancel()
+
+        // Reset state for a new recording
+        _uiState.value = PollingUiState.Polling
+        _noteTitle.value = ""
         _audioUri.value = audioUri
 
         pollingJob = viewModelScope.launch {
-            _uiState.value = PollingUiState.Polling
             val maxAttempts = 15
             // CRITICAL: We wait 5 attempts for a summary before accepting a transcript-only note (approx 3.75 mins).
             val summaryPatienceAttempts = 5
@@ -79,21 +83,22 @@ class FolderSelectViewModel(
                 when (val result = firefliesRepository.getTranscript(clientRefId)) {
                     is NetworkResult.Success -> {
                         val transcript = result.data
-                        
-                        // Stage 1: Check for a complete transcript with a summary.
+
                         val hasSentences = transcript.sentences?.isNotEmpty() == true
 
                         if (hasSentences) {
-                            val transcriptText = transcript.sentences?.joinToString(" ") { it.raw_text ?: ""} ?: ""
+                            val transcriptText = transcript.sentences
+                                ?.joinToString(" ") { it.raw_text ?: "" }
+                                ?: ""
 
                             when (val summaryResult = perplexityRepository.generateSummary(transcriptText)) {
                                 is NetworkResult.Success -> {
-                                    val completeSummary = transcript.copy (
+                                    val completeSummary = transcript.copy(
                                         summary = TranscriptSummary(
                                             overview = summaryResult.data,
                                             actionItems = null,
                                             keywords = null,
-                                            outline = null,
+                                            outline = null
                                         )
                                     )
                                     _uiState.value = PollingUiState.Success(completeSummary)
@@ -109,17 +114,15 @@ class FolderSelectViewModel(
                         }
                     }
                     is NetworkResult.Failure -> {
-                        // If it's a final error (not a 'still processing' message), stop polling.
                         if (!result.message.contains("not yet available")) {
                             _uiState.value = PollingUiState.Error(result.message)
                             return@launch
                         }
                     }
                 }
-                // Wait for 45 seconds before the next attempt.
                 delay(45_000)
             }
-            _uiState.value = PollingUiState.Timeout // If all attempts fail
+            _uiState.value = PollingUiState.Timeout
         }
     }
 

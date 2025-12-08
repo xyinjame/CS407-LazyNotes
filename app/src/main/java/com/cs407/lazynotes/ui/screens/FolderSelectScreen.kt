@@ -77,7 +77,7 @@ fun FolderSelectScreen(
 
     // The effect now triggers polling and passes all necessary data to the ViewModel
     LaunchedEffect(clientRefId, audioUri) {
-        if (clientRefId != null && uiState is PollingUiState.Idle) {
+        if (clientRefId != null) {
             viewModel.startPolling(clientRefId, audioUri)
         }
     }
