@@ -84,6 +84,7 @@ class FolderSelectViewModel(
                     is NetworkResult.Success -> {
                         val transcript = result.data
 
+                        // Stage 1: Check for a complete transcript with a summary.
                         val hasSentences = transcript.sentences?.isNotEmpty() == true
 
                         if (hasSentences) {
@@ -93,12 +94,12 @@ class FolderSelectViewModel(
 
                             when (val summaryResult = perplexityRepository.generateSummary(transcriptText)) {
                                 is NetworkResult.Success -> {
-                                    val completeSummary = transcript.copy(
+                                    val completeSummary = transcript.copy (
                                         summary = TranscriptSummary(
                                             overview = summaryResult.data,
                                             actionItems = null,
                                             keywords = null,
-                                            outline = null
+                                            outline = null,
                                         )
                                     )
                                     _uiState.value = PollingUiState.Success(completeSummary)
@@ -114,12 +115,14 @@ class FolderSelectViewModel(
                         }
                     }
                     is NetworkResult.Failure -> {
+                        // If it's a final error (not a 'still processing' message), stop polling.
                         if (!result.message.contains("not yet available")) {
                             _uiState.value = PollingUiState.Error(result.message)
                             return@launch
                         }
                     }
                 }
+                // Wait for 45 seconds before the next attempt. // If all attempts fail
                 delay(45_000)
             }
             _uiState.value = PollingUiState.Timeout
