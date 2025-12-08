@@ -37,8 +37,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.cs407.lazynotes.data.FolderRepository
 import com.cs407.lazynotes.R
+import com.cs407.lazynotes.data.FolderRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

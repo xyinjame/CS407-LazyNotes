@@ -37,7 +37,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.CacheDrawModifierNode
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -46,12 +45,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.cs407.lazynotes.R
 import com.cs407.lazynotes.data.repository.FirefliesRepository
 import com.cs407.lazynotes.data.repository.NetworkResult
 import com.cs407.lazynotes.util.FileUtil
 import kotlinx.coroutines.launch
 import java.io.File
-import com.cs407.lazynotes.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)

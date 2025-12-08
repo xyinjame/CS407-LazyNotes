@@ -1,5 +1,6 @@
 package com.cs407.lazynotes.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -20,12 +22,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +35,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,15 +48,13 @@ import com.cs407.lazynotes.data.NoteDatabase
 import com.cs407.lazynotes.data.NoteRepository
 import com.cs407.lazynotes.data.User
 import com.cs407.lazynotes.data.UserState
-import kotlinx.coroutines.launch
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.userProfileChangeRequest
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
-import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
-//Test Comment
 fun createAccount(
     email: String,
     password: String,
@@ -108,7 +109,6 @@ suspend fun deleteLocalUserData(context: android.content.Context, userUID: Strin
         val user = noteDB.userDao().getByUID(userUID)
         if (user != null) {
             noteDB.deleteDao().delete(user.userId)
-            println("✅ Local user data deleted")
         }
     } catch (e: Exception) {
         println("Failed to delete local user data: ${e.message}")
@@ -351,6 +351,14 @@ fun LoginPage(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "LazyNotes Logo",
+                            modifier = Modifier
+                                .size(80.dp)
+                        )
+
                         Text(
                             text = "LazyNotes",
                             style = MaterialTheme.typography.headlineLarge,
