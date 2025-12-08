@@ -72,6 +72,11 @@ fun NoteDetailScreen(
     // Observe preference: true = show transcript, false = show summary
     val showTranscriptFirst by Preferences.showTranscriptFirst.collectAsState(initial = true)
 
+    // Local toggle for this screen, initialized from preference
+    var showTranscript by remember(noteId, showTranscriptFirst) {
+        mutableStateOf(showTranscriptFirst)
+    }
+
     val primary = colorResource(id = R.color.primary_blue)
     val accent = colorResource(id = R.color.accent_coral)
     val background = colorResource(id = R.color.background_light)
@@ -150,6 +155,20 @@ fun NoteDetailScreen(
                                 }
                             }
                         )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    if (showTranscript)
+                                        "Show summary view"
+                                    else
+                                        "Show transcript view"
+                                )
+                            },
+                            onClick = {
+                                menuExpanded = false
+                                showTranscript = !showTranscript
+                            }
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -171,8 +190,8 @@ fun NoteDetailScreen(
         ) {
             note?.let { noteDetail ->
                 // Choose which text to show
-                val label = if (showTranscriptFirst) "Transcript" else "Summary"
-                val content = if (showTranscriptFirst) noteDetail.transcript else noteDetail.summary
+                val label = if (showTranscript) "Transcript" else "Summary"
+                val content = if (showTranscript) noteDetail.transcript else noteDetail.summary
 
                 Card(
                     modifier = Modifier
