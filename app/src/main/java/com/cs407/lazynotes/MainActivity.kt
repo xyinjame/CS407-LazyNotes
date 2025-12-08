@@ -36,7 +36,6 @@ import com.cs407.lazynotes.ui.screens.NoteListScreen
 import com.cs407.lazynotes.ui.screens.SettingsScreen
 import com.cs407.lazynotes.ui.screens.preferenceScreen
 import com.cs407.lazynotes.ui.screens.uploadFileBrowse
-import com.cs407.lazynotes.ui.screens.uploadFileScreen
 import com.cs407.lazynotes.ui.screens.FlashcardScreen
 import com.cs407.lazynotes.ui.theme.LazyNotesTheme
 import com.google.firebase.Firebase
@@ -54,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.cs407.lazynotes.ui.screens.LoginPage
-import com.cs407.lazynotes.ui.theme.MainBackground
 
 // --- Route Constants --- We define these to avoid typos and for easy reference
 private const val FOLDER_SELECT_ROUTE = "folderSelect"
