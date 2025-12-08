@@ -122,10 +122,10 @@ class FolderSelectViewModel(
                         }
                     }
                 }
-                // Wait for 45 seconds before the next attempt. // If all attempts fail
+                // Wait for 45 seconds before the next attempt.
                 delay(45_000)
             }
-            _uiState.value = PollingUiState.Timeout
+            _uiState.value = PollingUiState.Timeout // If all attempts fail
         }
     }
 
