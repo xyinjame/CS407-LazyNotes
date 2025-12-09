@@ -1,6 +1,6 @@
 # LazyNotes
 
-LazyNotes is a mobile lecture companion app that records audio, transcribes it into text, and generates AI-powered summaries with timestamps. It helps students review lectures efficiently by combining recording, transcription, and summarization in one place.
+LazyNotes is a mobile lecture companion app that records audio, transcribes it into text, and generates AI-powered summaries and flashcards. It helps students review lectures efficiently by combining transcription, summarization, note organization, and study tools in one place.
 
 ## Team Members
 | Name | Email | GitHub |
@@ -11,34 +11,46 @@ LazyNotes is a mobile lecture companion app that records audio, transcribes it i
 | Yawen Zhang | yzhang2863@wisc.edu | yzhang2863 |
 
 ## Overview
-LazyNotes allows users to record lectures through their mobile device, automatically transcribe the audio into text using a speech-to-text API, and generate structured summaries using a large language model. Users can replay sections of a lecture, browse summaries, and organize past recordings.
+LazyNotes allows users to record audio, upload it to Firebase Storage, and receive an automated transcript via the Fireflies transcription API. The app then generates an AI-powered summary of the transcript using Perplexity. Users can organize notes into folders, rename/move/delete notes, and convert summaries/transcripts into AI-generated flashcards for studying.
 
 ## Core Features
-- Audio recording with start, pause, and stop controls
-- Automatic transcription
-- AI-generated summaries and key points
-- AI based flashcards
-- Cloud storage of lectures and transcripts
-- Simple and clean user interface built with Jetpack Compose
+- Audio Recording: Start, pause, resume, and stop recording.
+- Automatic Transcription via Fireflies.
+- AI Summaries generated through Perplexity.
+- AI Flashcards.
+- Folder + Note Management:
+  - Create/delete folders
+  - Rename/delete/move notes
+  - Folder sorting: alphabetical or recently edited
+  - Expandable/collapsible folder list
+- Local Persistence using Room + DataStore
+- Firebase Storage for audio uploads
+- Clean UI built with Jetpack Compose
 
 ## System Overview
 
 ### Mobile (Android)
-- Records audio using a foreground service and saves files locally
-- Displays recordings, transcripts, and summaries through a Compose-based UI
-- Stores metadata and user preferences with Room and DataStore
+- Records audio and uploads it to Firebase Storage.
+- Polls Fireflies for transcript completion.
+- Generates summaries through Perplexity.
+- Creates flashcards using the transcript content.
+- Stores all notes and folders locally using Room.
+- Saves user preferences (folder layout, default view mode) using DataStore.
+- Fully Jetpack Compose UI.
 
 ### Server-Side
-- API backend handles communication with external transcription and summarization services
-- Transcription module processes audio using Fireflies
-- Summarization module generates structured text summaries via Fireflies and Perplexity
-
+- Fireflies API for speech-to-text transcription.
+- Perplexity API for:
+  - Text summarization
+  - Flashcard generation
 
 ## Tech Stack
-- Kotlin, Jetpack Compose
-- Room Database, WorkManager, Firebase
-- Fireflies for transcription
-- Perplexity for summarization and flashcards
+- Language: Kotlin
+- UI: Jetpack Compose
+- Local Storage: Room, DataStore
+- Cloud: Firebase Storage
+- Transcription: Fireflies API
+- Summaries & Flashcards: Perplexity API
 
 ## Milestones & Roles
 Milestone 1    
