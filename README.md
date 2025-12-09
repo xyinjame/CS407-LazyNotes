@@ -30,8 +30,8 @@ LazyNotes allows users to record lectures through their mobile device, automatic
 
 ### Server-Side
 - API backend handles communication with external transcription and summarization services
-- Transcription module processes audio using an ASR model (Whisper, Google STT, etc.)
-- Summarization module generates structured text summaries via a large language model (e.g., GPT)
+- Transcription module processes audio using Fireflies
+- Summarization module generates structured text summaries via Fireflies and Perplexity
 
 
 ## Tech Stack
@@ -41,12 +41,12 @@ LazyNotes allows users to record lectures through their mobile device, automatic
 - Perplexity for summarization and flashcards
 
 ## Milestones & Roles
-Milestone 1  
-Project Coordinator: James Yin
-Observer: Eric Wang
-Milestone 2 
-Project Coordinator: Yawen Zhang
-Observer: James Yin
+Milestone 1    
+Project Coordinator: James Yin  
+Observer: Eric Wang  
+Milestone 2  
+Project Coordinator: Yawen Zhang  
+Observer: James Yin  
 Milestone 3  
-Project Coordinator: Eric Wang
-Observer: Tim Yang
+Project Coordinator: Eric Wang  
+Observer: Tim Yang  
