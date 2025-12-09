@@ -15,9 +15,10 @@ LazyNotes allows users to record lectures through their mobile device, automatic
 
 ## Core Features
 - Audio recording with start, pause, and stop controls
-- Automatic transcription with timestamps
+- Automatic transcription
 - AI-generated summaries and key points
-- Local storage of lectures and transcripts
+- AI based flashcards
+- Cloud storage of lectures and transcripts
 - Simple and clean user interface built with Jetpack Compose
 
 ## System Overview
@@ -35,11 +36,17 @@ LazyNotes allows users to record lectures through their mobile device, automatic
 
 ## Tech Stack
 - Kotlin, Jetpack Compose
-- Room Database, WorkManager
-- Whisper / AssemblyAI / Google STT for transcription
-- OpenAI GPT for summarization
+- Room Database, WorkManager, Firebase
+- Fireflies for transcription
+- Perplexity for summarization and flashcards
 
 ## Milestones & Roles
 Milestone 1  
-Project Coordinator:  
-Observer:  
+Project Coordinator: James Yin
+Observer: Eric Wang
+Milestone 2 
+Project Coordinator: Yawen Zhang
+Observer: James Yin
+Milestone 3  
+Project Coordinator: Eric Wang
+Observer: Tim Yang
